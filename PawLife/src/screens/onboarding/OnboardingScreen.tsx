@@ -68,7 +68,7 @@ const PAGES: OnboardingPage[] = [
     id: 'trial',
     icon: 'star',
     iconGradient: ['#FFB07A', '#FF8C42'],
-    title: 'Start Your Free\n30-Day Trial',
+    title: 'Start Your Free\n10-Day Trial',
     subtitle: '',
     isFinal: true,
   },

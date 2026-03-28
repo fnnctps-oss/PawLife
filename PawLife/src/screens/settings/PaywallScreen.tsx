@@ -41,7 +41,7 @@ export const PaywallScreen: React.FC = () => {
   const handleSubscribe = () => {
     Alert.alert(
       'Trial Started!',
-      'Your 30-day free trial has been activated. Enjoy all premium features!',
+      'Your 10-day free trial has been activated. Enjoy all premium features!',
       [{ text: 'Awesome!', onPress: () => navigation.goBack() }]
     );
   };
@@ -113,7 +113,7 @@ export const PaywallScreen: React.FC = () => {
         </View>
 
         {/* CTA */}
-        <Button title="Start Free 30-Day Trial" onPress={handleSubscribe} size="lg" />
+        <Button title="Start Free 10-Day Trial" onPress={handleSubscribe} size="lg" />
         <Text style={styles.ctaSubtext}>
           Then {selectedPlan === 'monthly' ? '$4.99/month' : selectedPlan === 'yearly' ? '$29.99/year' : '$79.99 one-time'}. Cancel anytime.
         </Text>
@@ -134,7 +134,7 @@ export const PaywallScreen: React.FC = () => {
           </View>
           <View style={styles.trustItem}>
             <Ionicons name="refresh-outline" size={18} color={colors.lightText} />
-            <Text style={styles.trustText}>30-day guarantee</Text>
+            <Text style={styles.trustText}>10-day guarantee</Text>
           </View>
         </View>
       </ScrollView>

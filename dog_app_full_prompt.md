@@ -585,9 +585,9 @@ Store 200+ quotes in Firestore. Categorized for different notification types:
 
 ### Implementation:
 - Use RevenueCat SDK for subscription management
-- 30-day free trial for premium (all features unlocked)
+- 10-day free trial for premium (all features unlocked)
 - Soft paywall: When free user tries a premium feature, show a friendly modal explaining the feature with a "Start Free Trial" button — not a hard block
-- Trial reminder notifications: Day 25 — "Your trial ends in 5 days. Keep all your premium features!" Day 29 — "Last day of your trial! Subscribe to keep tracking [Dog Name]'s best life."
+- Trial reminder notifications: Day 7 — "Your trial ends in 3 days. Keep all your premium features!" Day 9 — "Last day of your trial! Subscribe to keep tracking [Dog Name]'s best life."
 
 ---
 
