@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, shadows } from '../theme';
+import { colors, shadows, useTheme } from '../theme';
 import { useStore } from '../store/useStore';
 
 // Screens
@@ -32,6 +32,7 @@ const Tab = createBottomTabNavigator();
 const LogActivityPlaceholder: React.FC = () => null;
 
 function MainTabs() {
+  const { colors: themeColors, isDark } = useTheme();
   const [showLogSheet, setShowLogSheet] = useState(false);
   const [activityType, setActivityType] = useState<ActivityType>('walk');
 
@@ -46,15 +47,15 @@ function MainTabs() {
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarStyle: {
-            backgroundColor: colors.white,
+            backgroundColor: themeColors.tabBar,
             borderTopWidth: 0,
             height: Platform.OS === 'ios' ? 88 : 64,
             paddingBottom: Platform.OS === 'ios' ? 28 : 8,
             paddingTop: 8,
             ...shadows.lg,
           },
-          tabBarActiveTintColor: colors.primary,
-          tabBarInactiveTintColor: colors.lightText,
+          tabBarActiveTintColor: themeColors.primary,
+          tabBarInactiveTintColor: themeColors.lightText,
           tabBarLabelStyle: {
             fontSize: 11,
             fontWeight: '600',
@@ -66,7 +67,7 @@ function MainTabs() {
             else if (route.name === 'LogTab') iconName = 'add-circle';
             else if (route.name === 'Milestones') iconName = focused ? 'trophy' : 'trophy-outline';
             else if (route.name === 'Profile') iconName = focused ? 'person-circle' : 'person-circle-outline';
-            return <Ionicons name={iconName} size={route.name === 'LogTab' ? 40 : 24} color={route.name === 'LogTab' ? colors.primary : color} />;
+            return <Ionicons name={iconName} size={route.name === 'LogTab' ? 40 : 24} color={route.name === 'LogTab' ? themeColors.primary : color} />;
           },
         })}
       >
@@ -116,9 +117,28 @@ function AuthStack() {
 
 export const AppNavigator: React.FC = () => {
   const { isAuthenticated, hasCompletedOnboarding, setOnboardingComplete } = useStore();
+  const { colors: themeCol, isDark } = useTheme();
+
+  const navTheme = {
+    dark: isDark,
+    colors: {
+      primary: themeCol.primary,
+      background: themeCol.background,
+      card: themeCol.card,
+      text: themeCol.darkText,
+      border: themeCol.border,
+      notification: themeCol.error,
+    },
+    fonts: {
+      regular: { fontFamily: 'System', fontWeight: '400' as const },
+      medium: { fontFamily: 'System', fontWeight: '500' as const },
+      bold: { fontFamily: 'System', fontWeight: '700' as const },
+      heavy: { fontFamily: 'System', fontWeight: '800' as const },
+    },
+  };
 
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navTheme}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!hasCompletedOnboarding ? (
           <Stack.Screen name="Onboarding">

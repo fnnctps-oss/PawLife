@@ -9,7 +9,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { colors, spacing, typography, borderRadius, shadows } from '../../theme';
+import { colors, spacing, typography, borderRadius, shadows, useTheme } from '../../theme';
+import type { ThemeMode } from '../../theme';
 import { ScreenContainer, Avatar, Card } from '../../components';
 import { useStore } from '../../store/useStore';
 
@@ -50,9 +51,16 @@ const SettingsRow: React.FC<SettingsRowProps> = ({
   </TouchableOpacity>
 );
 
+const THEME_OPTIONS: { key: ThemeMode; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { key: 'system', label: 'System', icon: 'phone-portrait-outline' },
+  { key: 'light', label: 'Light', icon: 'sunny-outline' },
+  { key: 'dark', label: 'Dark', icon: 'moon-outline' },
+];
+
 export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
-  const { user, dogs, isDarkMode, unitSystem, toggleDarkMode, setUnitSystem, setAuthenticated, setUser } = useStore();
+  const { user, dogs, themeMode, unitSystem, setThemeMode, setUnitSystem, setAuthenticated, setUser } = useStore();
+  const { colors: t, isDark } = useTheme();
 
   const handleSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -87,7 +95,7 @@ export const SettingsScreen: React.FC = () => {
   };
 
   return (
-    <ScreenContainer>
+    <ScreenContainer backgroundColor={t.background}>
       {/* Profile Header */}
       <View style={styles.profileHeader}>
         <Avatar name={user?.displayName || 'User'} size={80} />
@@ -159,19 +167,40 @@ export const SettingsScreen: React.FC = () => {
           rightElement={<Switch value={true} trackColor={{ false: colors.border, true: colors.primaryLight }} thumbColor={colors.primary} />}
         />
         <View style={styles.divider} />
-        <SettingsRow
-          icon="moon"
-          iconColor="#5856D6"
-          label="Dark Mode"
-          rightElement={
-            <Switch
-              value={isDarkMode}
-              onValueChange={toggleDarkMode}
-              trackColor={{ false: colors.border, true: colors.primaryLight }}
-              thumbColor={isDarkMode ? colors.primary : '#f4f3f4'}
-            />
-          }
-        />
+        <View style={styles.row}>
+          <View style={[styles.rowIcon, { backgroundColor: '#5856D6' + '15' }]}>
+            <Ionicons name="moon" size={18} color="#5856D6" />
+          </View>
+          <Text style={[styles.rowLabel, { color: t.darkText }]}>Appearance</Text>
+        </View>
+        <View style={styles.themeSelector}>
+          {THEME_OPTIONS.map((opt) => (
+            <TouchableOpacity
+              key={opt.key}
+              style={[
+                styles.themePill,
+                { borderColor: t.border, backgroundColor: t.surface },
+                themeMode === opt.key && { borderColor: t.primary, backgroundColor: t.primary + '15' },
+              ]}
+              onPress={() => setThemeMode(opt.key)}
+            >
+              <Ionicons
+                name={opt.icon}
+                size={16}
+                color={themeMode === opt.key ? t.primary : t.lightText}
+              />
+              <Text
+                style={[
+                  styles.themePillText,
+                  { color: t.lightText },
+                  themeMode === opt.key && { color: t.primary, fontWeight: '600' },
+                ]}
+              >
+                {opt.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
         <View style={styles.divider} />
         <SettingsRow
           icon="scale"
@@ -333,6 +362,26 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: colors.divider,
     marginLeft: 56,
+  },
+  themeSelector: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: spacing.base,
+    paddingBottom: 14,
+  },
+  themePill: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    borderRadius: borderRadius.md,
+    borderWidth: 1.5,
+  },
+  themePillText: {
+    ...typography.caption1,
+    fontWeight: '500',
   },
   version: {
     ...typography.caption1,

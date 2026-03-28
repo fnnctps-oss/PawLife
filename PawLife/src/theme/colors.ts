@@ -1,4 +1,6 @@
-export const colors = {
+export type ThemeColors = typeof lightColors;
+
+export const lightColors = {
   primary: '#FF8C42',
   primaryLight: '#FFB07A',
   primaryDark: '#E07030',
@@ -26,7 +28,44 @@ export const colors = {
   white: '#FFFFFF',
   black: '#000000',
   transparent: 'transparent',
+  tabBar: '#FFFFFF',
+  statusBar: 'dark-content' as 'dark-content' | 'light-content',
 };
+
+export const darkColors: ThemeColors = {
+  primary: '#FF8C42',
+  primaryLight: '#FFB07A',
+  primaryDark: '#E07030',
+  secondary: '#5A9FE8',
+  secondaryLight: '#7AB3E8',
+  secondaryDark: '#3570B0',
+  accent: '#6BCB77',
+  accentLight: '#8FDB97',
+  accentDark: '#4FB85A',
+  background: '#1C1C1E',
+  surface: '#2C2C2E',
+  card: '#2C2C2E',
+  darkText: '#F2F2F7',
+  bodyText: '#D1D1D6',
+  lightText: '#8E8E93',
+  placeholderText: '#636366',
+  error: '#FF6B6B',
+  errorLight: '#3A1A1A',
+  success: '#34C759',
+  warning: '#FFD60A',
+  border: '#3A3A3C',
+  divider: '#38383A',
+  shadow: '#000000',
+  overlay: 'rgba(0,0,0,0.6)',
+  white: '#FFFFFF',
+  black: '#000000',
+  transparent: 'transparent',
+  tabBar: '#1C1C1E',
+  statusBar: 'light-content' as const,
+};
+
+// Default export for backward compatibility — screens that don't use useTheme yet
+export const colors = lightColors;
 
 export const gradients = {
   primary: ['#FF8C42', '#FF6B1A'],

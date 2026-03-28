@@ -31,7 +31,7 @@ interface AppState {
   quotes: Quote[];
 
   // UI
-  isDarkMode: boolean;
+  themeMode: 'system' | 'light' | 'dark';
   unitSystem: 'metric' | 'imperial';
 
   // Actions
@@ -51,7 +51,7 @@ interface AppState {
   addMilestone: (milestone: Milestone) => void;
   addChallenge: (challenge: Challenge) => void;
   setQuotes: (quotes: Quote[]) => void;
-  toggleDarkMode: () => void;
+  setThemeMode: (mode: 'system' | 'light' | 'dark') => void;
   setUnitSystem: (system: 'metric' | 'imperial') => void;
 }
 
@@ -68,7 +68,7 @@ export const useStore = create<AppState>((set) => ({
   milestones: [],
   challenges: [],
   quotes: [],
-  isDarkMode: false,
+  themeMode: 'system',
   unitSystem: 'metric',
 
   setUser: (user) => set({ user }),
@@ -98,6 +98,6 @@ export const useStore = create<AppState>((set) => ({
   addMilestone: (milestone) => set((state) => ({ milestones: [...state.milestones, milestone] })),
   addChallenge: (challenge) => set((state) => ({ challenges: [...state.challenges, challenge] })),
   setQuotes: (quotes) => set({ quotes }),
-  toggleDarkMode: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
+  setThemeMode: (mode) => set({ themeMode: mode }),
   setUnitSystem: (system) => set({ unitSystem: system }),
 }));
