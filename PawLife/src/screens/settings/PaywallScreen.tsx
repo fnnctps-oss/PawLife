@@ -10,7 +10,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { colors, spacing, typography, borderRadius, shadows, gradients } from '../../theme';
+import { colors, spacing, typography, borderRadius, shadows, gradients, useTheme } from '../../theme';
 import { Button } from '../../components';
 
 const FEATURES = [
@@ -35,6 +35,7 @@ const PLANS: { key: PlanKey; label: string; price: string; detail: string; badge
 ];
 
 export const PaywallScreen: React.FC = () => {
+  const { colors: t } = useTheme();
   const navigation = useNavigation();
   const [selectedPlan, setSelectedPlan] = useState<PlanKey>('yearly');
 
@@ -47,11 +48,11 @@ export const PaywallScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: t.background }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {/* Close button */}
-        <TouchableOpacity style={styles.closeBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="close" size={24} color={colors.darkText} />
+        <TouchableOpacity style={[styles.closeBtn, { backgroundColor: t.surface }]} onPress={() => navigation.goBack()}>
+          <Ionicons name="close" size={24} color={t.darkText} />
         </TouchableOpacity>
 
         {/* Hero */}
@@ -62,8 +63,8 @@ export const PaywallScreen: React.FC = () => {
           >
             <Ionicons name="paw" size={40} color={colors.white} />
           </LinearGradient>
-          <Text style={styles.heroTitle}>Unlock PawLife Premium</Text>
-          <Text style={styles.heroSubtitle}>Give your dog the best care</Text>
+          <Text style={[styles.heroTitle, { color: t.darkText }]}>Unlock PawLife Premium</Text>
+          <Text style={[styles.heroSubtitle, { color: t.lightText }]}>Give your dog the best care</Text>
         </View>
 
         {/* Features */}
@@ -73,7 +74,7 @@ export const PaywallScreen: React.FC = () => {
               <View style={styles.checkCircle}>
                 <Ionicons name="checkmark" size={14} color={colors.white} />
               </View>
-              <Text style={styles.featureText}>{feature.label}</Text>
+              <Text style={[styles.featureText, { color: t.darkText }]}>{feature.label}</Text>
               {feature.badge && (
                 <View style={[styles.featureBadge, feature.badge === 'New' ? styles.newBadge : styles.popularBadge]}>
                   <Text style={styles.featureBadgeText}>{feature.badge}</Text>
@@ -90,7 +91,8 @@ export const PaywallScreen: React.FC = () => {
               key={plan.key}
               style={[
                 styles.planCard,
-                selectedPlan === plan.key && styles.planCardSelected,
+                { backgroundColor: t.surface, borderColor: t.border },
+                selectedPlan === plan.key && { borderColor: colors.primary, backgroundColor: t.primary + '12' },
               ]}
               onPress={() => setSelectedPlan(plan.key)}
             >
@@ -107,7 +109,7 @@ export const PaywallScreen: React.FC = () => {
               <Text style={[styles.planPrice, selectedPlan === plan.key && { color: colors.primary }]}>
                 {plan.price}
               </Text>
-              <Text style={styles.planDetail}>{plan.detail}</Text>
+              <Text style={[styles.planDetail, { color: t.lightText }]}>{plan.detail}</Text>
             </TouchableOpacity>
           ))}
         </View>

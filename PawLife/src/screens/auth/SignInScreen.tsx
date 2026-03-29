@@ -10,10 +10,11 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { Button, Input, ScreenContainer } from '../../components';
-import { colors, spacing, typography, borderRadius } from '../../theme';
+import { colors, spacing, typography, borderRadius, useTheme } from '../../theme';
 import { useStore } from '../../store/useStore';
 
 export const SignInScreen: React.FC = () => {
+  const { colors: t } = useTheme();
   const navigation = useNavigation<any>();
   const { setAuthenticated, setUser } = useStore();
 
@@ -71,18 +72,18 @@ export const SignInScreen: React.FC = () => {
   };
 
   return (
-    <ScreenContainer backgroundColor={colors.background}>
+    <ScreenContainer backgroundColor={t.background}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.flex}
       >
         {/* Logo Area */}
         <View style={styles.logoContainer}>
-          <View style={styles.logoCircle}>
+          <View style={[styles.logoCircle, { backgroundColor: t.card }]}>
             <Ionicons name="paw" size={48} color={colors.primary} />
           </View>
-          <Text style={styles.appName}>PawLife</Text>
-          <Text style={styles.tagline}>Your dog's best companion</Text>
+          <Text style={[styles.appName, { color: t.darkText }]}>PawLife</Text>
+          <Text style={[styles.tagline, { color: t.lightText }]}>Your dog's best companion</Text>
         </View>
 
         {/* Form */}
@@ -133,35 +134,35 @@ export const SignInScreen: React.FC = () => {
 
         {/* Divider */}
         <View style={styles.dividerContainer}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or continue with</Text>
-          <View style={styles.dividerLine} />
+          <View style={[styles.dividerLine, { backgroundColor: t.border }]} />
+          <Text style={[styles.dividerText, { color: t.lightText }]}>or continue with</Text>
+          <View style={[styles.dividerLine, { backgroundColor: t.border }]} />
         </View>
 
         {/* Social Sign In */}
         <View style={styles.socialContainer}>
           <TouchableOpacity
-            style={styles.socialButton}
+            style={[styles.socialButton, { borderColor: t.border, backgroundColor: t.card }]}
             onPress={() => handleSocialSignIn('google')}
             activeOpacity={0.7}
           >
-            <Ionicons name="logo-google" size={22} color={colors.darkText} />
-            <Text style={styles.socialButtonText}>Google</Text>
+            <Ionicons name="logo-google" size={22} color={t.darkText} />
+            <Text style={[styles.socialButtonText, { color: t.darkText }]}>Google</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.socialButton}
+            style={[styles.socialButton, { borderColor: t.border, backgroundColor: t.card }]}
             onPress={() => handleSocialSignIn('apple')}
             activeOpacity={0.7}
           >
-            <Ionicons name="logo-apple" size={22} color={colors.darkText} />
-            <Text style={styles.socialButtonText}>Apple</Text>
+            <Ionicons name="logo-apple" size={22} color={t.darkText} />
+            <Text style={[styles.socialButtonText, { color: t.darkText }]}>Apple</Text>
           </TouchableOpacity>
         </View>
 
         {/* Sign Up Link */}
         <View style={styles.bottomLink}>
-          <Text style={styles.bottomLinkText}>Don't have an account? </Text>
+          <Text style={[styles.bottomLinkText, { color: t.lightText }]}>Don't have an account? </Text>
           <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
             <Text style={styles.bottomLinkAction}>Sign Up</Text>
           </TouchableOpacity>
@@ -184,7 +185,6 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: colors.shadow,
@@ -196,12 +196,10 @@ const styles = StyleSheet.create({
   },
   appName: {
     ...typography.largeTitle,
-    color: colors.darkText,
     marginBottom: spacing.xs,
   },
   tagline: {
     ...typography.subhead,
-    color: colors.lightText,
   },
   form: {
     marginBottom: spacing.xl,
@@ -224,11 +222,9 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.border,
   },
   dividerText: {
     ...typography.footnote,
-    color: colors.lightText,
     marginHorizontal: spacing.base,
   },
   socialContainer: {
@@ -245,13 +241,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: borderRadius.md,
     borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
   },
   socialButtonText: {
     ...typography.callout,
     fontWeight: '600',
-    color: colors.darkText,
   },
   bottomLink: {
     flexDirection: 'row',
@@ -261,7 +254,6 @@ const styles = StyleSheet.create({
   },
   bottomLinkText: {
     ...typography.subhead,
-    color: colors.lightText,
   },
   bottomLinkAction: {
     ...typography.subhead,

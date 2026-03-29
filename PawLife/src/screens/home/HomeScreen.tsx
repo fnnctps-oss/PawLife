@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Card, Avatar, Badge, ScreenContainer } from '../../components';
-import { colors, spacing, typography, borderRadius, shadows, gradients } from '../../theme';
+import { colors, spacing, typography, borderRadius, shadows, gradients, useTheme } from '../../theme';
 import { useStore } from '../../store/useStore';
 import { getGreeting, getAge, getActivityIcon, getActivityColor } from '../../utils/helpers';
 
@@ -142,6 +142,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // ---------------------------------------------------------------------------
 
 export const HomeScreen: React.FC = () => {
+  const { colors: t } = useTheme();
   const navigation = useNavigation();
 
   // Pull from store, falling back to mock data for a populated look
@@ -196,13 +197,14 @@ export const HomeScreen: React.FC = () => {
               activeOpacity={0.7}
               style={styles.dogSelectorItem}
             >
-              <View style={[styles.dogAvatarRing, isSelected && styles.dogAvatarRingActive]}>
+              <View style={[styles.dogAvatarRing, { borderColor: t.transparent }, isSelected && styles.dogAvatarRingActive]}>
                 <Avatar uri={dog.photo || undefined} name={dog.name} size={52} />
               </View>
               <Text
                 style={[
                   styles.dogSelectorName,
-                  isSelected && styles.dogSelectorNameActive,
+                  { color: t.bodyText },
+                  isSelected && [styles.dogSelectorNameActive, { color: colors.primary }],
                 ]}
                 numberOfLines={1}
               >
@@ -226,30 +228,30 @@ export const HomeScreen: React.FC = () => {
             size={72}
           />
           <View style={styles.featuredInfo}>
-            <Text style={styles.featuredName}>{currentDog.name}</Text>
-            <Text style={styles.featuredBreed}>{currentDog.breed}</Text>
-            <Text style={styles.featuredAge}>{getAge(currentDog.dateOfBirth)}</Text>
+            <Text style={[styles.featuredName, { color: t.darkText }]}>{currentDog.name}</Text>
+            <Text style={[styles.featuredBreed, { color: t.bodyText }]}>{currentDog.breed}</Text>
+            <Text style={[styles.featuredAge, { color: t.lightText }]}>{getAge(currentDog.dateOfBirth)}</Text>
           </View>
         </View>
 
         {/* Quick stats row */}
-        <View style={styles.statsRow}>
+        <View style={[styles.statsRow, { backgroundColor: t.background }]}>
           <View style={styles.statItem}>
             <Ionicons name="footsteps-outline" size={18} color={colors.accent} />
-            <Text style={styles.statValue}>5</Text>
-            <Text style={styles.statLabel}>Walks</Text>
+            <Text style={[styles.statValue, { color: t.darkText }]}>5</Text>
+            <Text style={[styles.statLabel, { color: t.lightText }]}>Walks</Text>
           </View>
-          <View style={styles.statDivider} />
+          <View style={[styles.statDivider, { backgroundColor: t.border }]} />
           <View style={styles.statItem}>
             <Ionicons name="restaurant-outline" size={18} color={colors.primary} />
-            <Text style={styles.statValue}>2</Text>
-            <Text style={styles.statLabel}>Meals</Text>
+            <Text style={[styles.statValue, { color: t.darkText }]}>2</Text>
+            <Text style={[styles.statLabel, { color: t.lightText }]}>Meals</Text>
           </View>
-          <View style={styles.statDivider} />
+          <View style={[styles.statDivider, { backgroundColor: t.border }]} />
           <View style={styles.statItem}>
             <Ionicons name="water-outline" size={18} color={colors.secondary} />
-            <Text style={styles.statValue}>3</Text>
-            <Text style={styles.statLabel}>Water</Text>
+            <Text style={[styles.statValue, { color: t.darkText }]}>3</Text>
+            <Text style={[styles.statLabel, { color: t.lightText }]}>Water</Text>
           </View>
         </View>
 
@@ -271,11 +273,11 @@ export const HomeScreen: React.FC = () => {
 
   const renderSchedule = () => (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Today's Schedule</Text>
+      <Text style={[styles.sectionTitle, { color: t.darkText }]}>Today's Schedule</Text>
       {MOCK_SCHEDULE.length === 0 ? (
         <Card style={styles.emptyScheduleCard}>
-          <Ionicons name="calendar-outline" size={32} color={colors.placeholderText} />
-          <Text style={styles.emptyScheduleText}>No activities yet today</Text>
+          <Ionicons name="calendar-outline" size={32} color={t.placeholderText} />
+          <Text style={[styles.emptyScheduleText, { color: t.lightText }]}>No activities yet today</Text>
         </Card>
       ) : (
         <Card variant="default" style={styles.scheduleCard}>
@@ -289,18 +291,18 @@ export const HomeScreen: React.FC = () => {
                 {/* Timeline connector */}
                 <View style={styles.timelineCol}>
                   <View style={[styles.timelineDot, { backgroundColor: activityColor }]} />
-                  {!isLast && <View style={styles.timelineLine} />}
+                  {!isLast && <View style={[styles.timelineLine, { backgroundColor: t.border }]} />}
                 </View>
 
                 {/* Content */}
-                <View style={[styles.scheduleContent, !isLast && styles.scheduleContentBorder]}>
+                <View style={[styles.scheduleContent, !isLast && [styles.scheduleContentBorder, { borderBottomColor: t.divider }]]}>
                   <View style={styles.scheduleLeft}>
                     <View style={[styles.scheduleIconWrap, { backgroundColor: activityColor + '1A' }]}>
                       <Ionicons name={iconName} size={16} color={activityColor} />
                     </View>
                     <View style={styles.scheduleMeta}>
-                      <Text style={styles.scheduleTitle}>{item.title}</Text>
-                      <Text style={styles.scheduleTime}>{item.time}</Text>
+                      <Text style={[styles.scheduleTitle, { color: t.darkText }]}>{item.title}</Text>
+                      <Text style={[styles.scheduleTime, { color: t.lightText }]}>{item.time}</Text>
                     </View>
                   </View>
                   <View style={[styles.statusPill, { backgroundColor: status.bg }]}>
@@ -319,7 +321,7 @@ export const HomeScreen: React.FC = () => {
 
   const renderQuickActions = () => (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Quick Actions</Text>
+      <Text style={[styles.sectionTitle, { color: t.darkText }]}>Quick Actions</Text>
       <View style={styles.actionsGrid}>
         {QUICK_ACTIONS.map((action) => (
           <TouchableOpacity
@@ -346,7 +348,7 @@ export const HomeScreen: React.FC = () => {
 
   const renderWeeklyChart = () => (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Weekly Activity</Text>
+      <Text style={[styles.sectionTitle, { color: t.darkText }]}>Weekly Activity</Text>
       <Card variant="default" style={styles.chartCard}>
         <View style={styles.chartBars}>
           {MOCK_WEEKLY_ACTIVITY.map((entry) => {
@@ -354,12 +356,12 @@ export const HomeScreen: React.FC = () => {
             const isToday = entry.day === ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
             return (
               <View key={entry.day} style={styles.chartBarCol}>
-                <Text style={styles.chartBarValue}>{entry.count}</Text>
+                <Text style={[styles.chartBarValue, { color: t.lightText }]}>{entry.count}</Text>
                 <LinearGradient
                   colors={isToday ? (gradients.primary as [string, string]) : [colors.primaryLight, colors.primaryLight]}
                   style={[styles.chartBar, { height: barHeight }]}
                 />
-                <Text style={[styles.chartBarLabel, isToday && styles.chartBarLabelToday]}>
+                <Text style={[styles.chartBarLabel, { color: t.lightText }, isToday && styles.chartBarLabelToday]}>
                   {entry.day}
                 </Text>
               </View>
@@ -396,21 +398,21 @@ export const HomeScreen: React.FC = () => {
   // ---------------------------------------------------------------------------
 
   return (
-    <ScreenContainer scrollable backgroundColor={colors.background}>
+    <ScreenContainer scrollable backgroundColor={t.background}>
       {/* Greeting */}
       <View style={styles.greetingRow}>
         <View>
-          <Text style={styles.greeting}>
+          <Text style={[styles.greeting, { color: t.darkText }]}>
             {greetingEmoji} {greeting}, {user.displayName}
           </Text>
-          <Text style={styles.subtitle}>Here's how your pups are doing</Text>
+          <Text style={[styles.subtitle, { color: t.lightText }]}>Here's how your pups are doing</Text>
         </View>
         <TouchableOpacity
-          style={styles.notificationBtn}
+          style={[styles.notificationBtn, { backgroundColor: t.surface }]}
           activeOpacity={0.7}
           onPress={() => Alert.alert('Notifications', 'No new notifications.')}
         >
-          <Ionicons name="notifications-outline" size={24} color={colors.darkText} />
+          <Ionicons name="notifications-outline" size={24} color={t.darkText} />
         </TouchableOpacity>
       </View>
 

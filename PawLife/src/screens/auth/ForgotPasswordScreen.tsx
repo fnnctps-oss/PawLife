@@ -9,9 +9,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { Button, Input, ScreenContainer } from '../../components';
-import { colors, spacing, typography, borderRadius } from '../../theme';
+import { colors, spacing, typography, borderRadius, useTheme } from '../../theme';
 
 export const ForgotPasswordScreen: React.FC = () => {
+  const { colors: t } = useTheme();
   const navigation = useNavigation<any>();
 
   const [email, setEmail] = useState('');
@@ -66,7 +67,7 @@ export const ForgotPasswordScreen: React.FC = () => {
 
   if (sent) {
     return (
-      <ScreenContainer backgroundColor={colors.background}>
+      <ScreenContainer backgroundColor={t.background}>
         <View style={styles.successContainer}>
           <Animated.View
             style={[
@@ -80,12 +81,12 @@ export const ForgotPasswordScreen: React.FC = () => {
             <Ionicons name="checkmark" size={48} color={colors.white} />
           </Animated.View>
 
-          <Text style={styles.successTitle}>Check Your Email</Text>
-          <Text style={styles.successMessage}>
+          <Text style={[styles.successTitle, { color: t.darkText }]}>Check Your Email</Text>
+          <Text style={[styles.successMessage, { color: t.lightText }]}>
             We've sent a password reset link to{'\n'}
-            <Text style={styles.emailHighlight}>{email}</Text>
+            <Text style={[styles.emailHighlight, { color: t.darkText }]}>{email}</Text>
           </Text>
-          <Text style={styles.successHint}>
+          <Text style={[styles.successHint, { color: t.lightText }]}>
             Didn't receive the email? Check your spam folder or try again.
           </Text>
 
@@ -113,26 +114,26 @@ export const ForgotPasswordScreen: React.FC = () => {
   }
 
   return (
-    <ScreenContainer backgroundColor={colors.background}>
+    <ScreenContainer backgroundColor={t.background}>
       <View style={styles.container}>
         {/* Back Button */}
         <TouchableOpacity
-          style={styles.backButton}
+          style={[styles.backButton, { backgroundColor: t.card }]}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={24} color={colors.darkText} />
+          <Ionicons name="arrow-back" size={24} color={t.darkText} />
         </TouchableOpacity>
 
         {/* Icon */}
         <View style={styles.iconContainer}>
-          <View style={styles.iconCircle}>
+          <View style={[styles.iconCircle, { backgroundColor: t.card }]}>
             <Ionicons name="key-outline" size={36} color={colors.primary} />
           </View>
         </View>
 
         {/* Header */}
-        <Text style={styles.title}>Forgot Password?</Text>
-        <Text style={styles.description}>
+        <Text style={[styles.title, { color: t.darkText }]}>Forgot Password?</Text>
+        <Text style={[styles.description, { color: t.lightText }]}>
           No worries! Enter the email address associated with your account and
           we'll send you a link to reset your password.
         </Text>
@@ -189,7 +190,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: colors.shadow,
@@ -207,7 +207,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: colors.shadow,
@@ -218,12 +217,10 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.title1,
-    color: colors.darkText,
     marginBottom: spacing.md,
   },
   description: {
     ...typography.body,
-    color: colors.lightText,
     lineHeight: 24,
     marginBottom: spacing.xxl,
   },

@@ -14,7 +14,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, spacing, borderRadius, typography } from '../../theme';
+import { colors, spacing, borderRadius, typography, useTheme } from '../../theme';
 import { Button } from '../../components/Button';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -88,6 +88,7 @@ const DOT_SPACING = 8;
 export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   onComplete,
 }) => {
+  const { colors: t } = useTheme();
   const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -151,7 +152,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
       <View style={styles.checkCircle}>
         <Ionicons name="checkmark" size={16} color={colors.white} />
       </View>
-      <Text style={styles.featureText}>{feature}</Text>
+      <Text style={[styles.featureText, { color: t.darkText }]}>{feature}</Text>
     </View>
   );
 
@@ -184,14 +185,14 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
         >
           {renderIcon(item)}
 
-          <Text style={styles.title}>{item.title}</Text>
+          <Text style={[styles.title, { color: t.darkText }]}>{item.title}</Text>
 
           {item.isFinal ? (
             <View style={styles.featuresContainer}>
               {TRIAL_FEATURES.map(renderTrialFeature)}
             </View>
           ) : (
-            <Text style={styles.subtitle}>{item.subtitle}</Text>
+            <Text style={[styles.subtitle, { color: t.bodyText }]}>{item.subtitle}</Text>
           )}
         </Animated.View>
       </View>
@@ -245,7 +246,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   const isLastPage = currentIndex === PAGES.length - 1;
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: t.background }]}>
       {/* Skip button */}
       {!isLastPage && (
         <TouchableOpacity

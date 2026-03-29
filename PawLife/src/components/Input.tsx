@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, borderRadius, spacing, typography } from '../theme';
+import { colors, borderRadius, spacing, typography, useTheme } from '../theme';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -28,28 +28,30 @@ export const Input: React.FC<InputProps> = ({
   ...props
 }) => {
   const [focused, setFocused] = useState(false);
+  const { colors: t } = useTheme();
 
   return (
     <View style={styles.container}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && <Text style={[styles.label, { color: t.darkText }]}>{label}</Text>}
       <View
         style={[
           styles.inputContainer,
-          focused && styles.focused,
-          error && styles.errorBorder,
+          { backgroundColor: t.surface, borderColor: t.border },
+          focused && { borderColor: t.primary, backgroundColor: t.surface },
+          error && { borderColor: t.error },
         ]}
       >
         {icon && (
           <Ionicons
             name={icon}
             size={20}
-            color={focused ? colors.primary : colors.lightText}
+            color={focused ? t.primary : t.lightText}
             style={styles.icon}
           />
         )}
         <TextInput
-          style={[styles.input, style]}
-          placeholderTextColor={colors.placeholderText}
+          style={[styles.input, { color: t.darkText }, style]}
+          placeholderTextColor={t.placeholderText}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           {...props}
@@ -59,13 +61,13 @@ export const Input: React.FC<InputProps> = ({
             <Ionicons
               name={rightIcon}
               size={20}
-              color={colors.lightText}
+              color={t.lightText}
               style={styles.icon}
             />
           </TouchableOpacity>
         )}
       </View>
-      {error && <Text style={styles.error}>{error}</Text>}
+      {error && <Text style={[styles.error, { color: t.error }]}>{error}</Text>}
     </View>
   );
 };
@@ -78,25 +80,15 @@ const styles = StyleSheet.create({
   label: {
     ...typography.subhead,
     fontWeight: '600',
-    color: colors.darkText,
     marginBottom: spacing.sm,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.white,
     borderRadius: borderRadius.md,
     borderWidth: 1.5,
-    borderColor: colors.border,
     paddingHorizontal: spacing.base,
     minHeight: 52,
-  },
-  focused: {
-    borderColor: colors.primary,
-    backgroundColor: '#FFF',
-  },
-  errorBorder: {
-    borderColor: colors.error,
   },
   icon: {
     marginRight: spacing.sm,
@@ -104,12 +96,10 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     ...typography.body,
-    color: colors.darkText,
     paddingVertical: spacing.md,
   },
   error: {
     ...typography.caption1,
-    color: colors.error,
     marginTop: spacing.xs,
     marginLeft: spacing.xs,
   },

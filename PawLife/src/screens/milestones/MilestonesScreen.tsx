@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, typography, borderRadius, shadows, gradients } from '../../theme';
+import { colors, spacing, typography, borderRadius, shadows, gradients, useTheme } from '../../theme';
 import { ScreenContainer, Button, Card } from '../../components';
 import { useStore } from '../../store/useStore';
 

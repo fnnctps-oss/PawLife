@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Button, Input, ScreenContainer, Avatar, Card } from '../../components';
 import { generateId } from '../../utils/helpers';
 import { useStore } from '../../store/useStore';
+import { useTheme } from '../../theme';
 
 const COMMON_BREEDS = [
   'Labrador Retriever',
@@ -46,10 +47,12 @@ const COMMON_BREEDS = [
   'Mixed Breed',
 ];
 
-const PRIMARY_COLOR = '#FF8C42';
-const BACKGROUND_COLOR = '#FFF8F0';
+import { colors } from '../../theme/colors';
+const PRIMARY_COLOR = colors.primary;
+const BACKGROUND_COLOR = colors.background;
 
 const AddDogScreen: React.FC = () => {
+  const { colors: t } = useTheme();
   const navigation = useNavigation();
   const addDog = useStore((state) => state.addDog);
 
@@ -137,7 +140,7 @@ const AddDogScreen: React.FC = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: t.background }]}
         contentContainerStyle={styles.contentContainer}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}

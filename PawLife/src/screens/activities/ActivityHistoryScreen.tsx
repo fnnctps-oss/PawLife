@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Card, EmptyState, ScreenContainer } from '../../components';
-import { colors, spacing, borderRadius, typography, shadows, gradients } from '../../theme';
+import { colors, spacing, borderRadius, typography, shadows, gradients, useTheme } from '../../theme';
 import { useStore } from '../../store/useStore';
 import {
   getActivityIcon,
@@ -70,6 +70,7 @@ interface ActivityHistoryScreenProps {
 export const ActivityHistoryScreen: React.FC<ActivityHistoryScreenProps> = ({
   onOpenLogSheet,
 }) => {
+  const { colors: t } = useTheme();
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
   const { activities, selectedDogId, unitSystem } = useStore();
 
@@ -175,9 +176,9 @@ export const ActivityHistoryScreen: React.FC<ActivityHistoryScreenProps> = ({
                 <Text style={[styles.filterLabel, styles.filterLabelActive]}>{tab.label}</Text>
               </LinearGradient>
             ) : (
-              <View style={[styles.filterTab, styles.filterTabInactive]}>
-                <Ionicons name={tab.icon} size={16} color={colors.lightText} />
-                <Text style={styles.filterLabel}>{tab.label}</Text>
+              <View style={[styles.filterTab, styles.filterTabInactive, { backgroundColor: t.card, borderColor: t.border }]}>
+                <Ionicons name={tab.icon} size={16} color={t.lightText} />
+                <Text style={[styles.filterLabel, { color: t.lightText }]}>{tab.label}</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -204,18 +205,18 @@ export const ActivityHistoryScreen: React.FC<ActivityHistoryScreenProps> = ({
             </View>
             <View style={styles.activityContent}>
               <View style={styles.activityHeader}>
-                <Text style={styles.activityType}>
+                <Text style={[styles.activityType, { color: t.darkText }]}>
                   {getActivityTypeLabel(activity.type)}
                 </Text>
-                <Text style={styles.activityTime}>{formatTime(activity.timestamp)}</Text>
+                <Text style={[styles.activityTime, { color: t.lightText }]}>{formatTime(activity.timestamp)}</Text>
               </View>
               {details ? (
-                <Text style={styles.activityDetails} numberOfLines={1}>
+                <Text style={[styles.activityDetails, { color: t.bodyText }]} numberOfLines={1}>
                   {details}
                 </Text>
               ) : null}
               {activity.notes ? (
-                <Text style={styles.activityNotes} numberOfLines={1}>
+                <Text style={[styles.activityNotes, { color: t.lightText }]} numberOfLines={1}>
                   {activity.notes}
                 </Text>
               ) : null}
@@ -226,7 +227,7 @@ export const ActivityHistoryScreen: React.FC<ActivityHistoryScreenProps> = ({
             <Ionicons
               name="chevron-forward"
               size={16}
-              color={colors.placeholderText}
+              color={t.placeholderText}
               style={styles.chevron}
             />
           </View>
@@ -238,7 +239,7 @@ export const ActivityHistoryScreen: React.FC<ActivityHistoryScreenProps> = ({
   return (
     <ScreenContainer scrollable={false} padded={false}>
       <View style={styles.screenHeader}>
-        <Text style={styles.screenTitle}>Activity History</Text>
+        <Text style={[styles.screenTitle, { color: t.darkText }]}>Activity History</Text>
       </View>
 
       {renderFilterTabs()}
@@ -259,7 +260,7 @@ export const ActivityHistoryScreen: React.FC<ActivityHistoryScreenProps> = ({
         >
           {groupedActivities.map((group) => (
             <View key={group.label} style={styles.dateGroup}>
-              <Text style={styles.dateLabel}>{group.label}</Text>
+              <Text style={[styles.dateLabel, { color: t.darkText }]}>{group.label}</Text>
               {group.activities.map(renderActivityItem)}
             </View>
           ))}

@@ -8,7 +8,7 @@ import {
   FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, typography, borderRadius, shadows } from '../../theme';
+import { colors, spacing, typography, borderRadius, shadows, useTheme } from '../../theme';
 import { Button, Input, Card, ScreenContainer, BottomSheet, EmptyState } from '../../components';
 import { useStore } from '../../store/useStore';
 import { generateId } from '../../utils/helpers';
@@ -42,6 +42,7 @@ const TEMPLATES = [
 ];
 
 export const RemindersScreen: React.FC = () => {
+  const { colors: t } = useTheme();
   const { reminders, addReminder, updateReminder, removeReminder, selectedDogId } = useStore();
   const [showAdd, setShowAdd] = useState(false);
   const [selectedType, setSelectedType] = useState<ReminderType>('food');
@@ -103,9 +104,9 @@ export const RemindersScreen: React.FC = () => {
             <Ionicons name={typeInfo.icon as any} size={22} color={typeInfo.color} />
           </View>
           <View style={styles.reminderInfo}>
-            <Text style={styles.reminderTitle}>{item.title}</Text>
+            <Text style={[styles.reminderTitle, { color: t.darkText }]}>{item.title}</Text>
             <View style={styles.reminderMeta}>
-              <Text style={styles.reminderTime}>{item.time}</Text>
+              <Text style={[styles.reminderTime, { color: t.lightText }]}>{item.time}</Text>
               <View style={[styles.repeatBadge, { backgroundColor: typeInfo.color + '15' }]}>
                 <Text style={[styles.repeatText, { color: typeInfo.color }]}>
                   {item.repeatPattern.charAt(0).toUpperCase() + item.repeatPattern.slice(1)}
@@ -116,8 +117,8 @@ export const RemindersScreen: React.FC = () => {
           <Switch
             value={item.enabled}
             onValueChange={(val) => updateReminder(item.id, { enabled: val })}
-            trackColor={{ false: colors.border, true: colors.primaryLight }}
-            thumbColor={item.enabled ? colors.primary : '#f4f3f4'}
+            trackColor={{ false: t.border, true: t.primaryLight }}
+            thumbColor={item.enabled ? t.primary : '#f4f3f4'}
           />
         </View>
       </Card>
@@ -127,7 +128,7 @@ export const RemindersScreen: React.FC = () => {
   return (
     <ScreenContainer>
       <View style={styles.header}>
-        <Text style={styles.screenTitle}>Reminders</Text>
+        <Text style={[styles.screenTitle, { color: t.darkText }]}>Reminders</Text>
         <TouchableOpacity style={styles.addButton} onPress={openAddSheet}>
           <Ionicons name="add" size={24} color={colors.white} />
         </TouchableOpacity>
@@ -142,21 +143,21 @@ export const RemindersScreen: React.FC = () => {
             actionTitle="Add Reminder"
             onAction={openAddSheet}
           />
-          <Text style={styles.sectionTitle}>Quick Add</Text>
+          <Text style={[styles.sectionTitle, { color: t.darkText }]}>Quick Add</Text>
           <View style={styles.templateGrid}>
             {TEMPLATES.map((tpl, idx) => {
               const typeInfo = getTypeInfo(tpl.type);
               return (
                 <TouchableOpacity
                   key={idx}
-                  style={styles.templateCard}
+                  style={[styles.templateCard, { backgroundColor: t.card }]}
                   onPress={() => handleQuickAdd(tpl)}
                 >
                   <View style={[styles.templateIcon, { backgroundColor: typeInfo.color + '18' }]}>
                     <Ionicons name={typeInfo.icon as any} size={20} color={typeInfo.color} />
                   </View>
-                  <Text style={styles.templateTitle}>{tpl.title}</Text>
-                  <Text style={styles.templateTime}>{tpl.time}</Text>
+                  <Text style={[styles.templateTitle, { color: t.darkText }]}>{tpl.title}</Text>
+                  <Text style={[styles.templateTime, { color: t.lightText }]}>{tpl.time}</Text>
                 </TouchableOpacity>
               );
             })}
@@ -171,21 +172,21 @@ export const RemindersScreen: React.FC = () => {
           contentContainerStyle={{ gap: spacing.sm }}
           ListFooterComponent={
             <View style={{ marginTop: spacing.xl }}>
-              <Text style={styles.sectionTitle}>Quick Add</Text>
+              <Text style={[styles.sectionTitle, { color: t.darkText }]}>Quick Add</Text>
               <View style={styles.templateGrid}>
                 {TEMPLATES.map((tpl, idx) => {
                   const typeInfo = getTypeInfo(tpl.type);
                   return (
                     <TouchableOpacity
                       key={idx}
-                      style={styles.templateCard}
+                      style={[styles.templateCard, { backgroundColor: t.card }]}
                       onPress={() => handleQuickAdd(tpl)}
                     >
                       <View style={[styles.templateIcon, { backgroundColor: typeInfo.color + '18' }]}>
                         <Ionicons name={typeInfo.icon as any} size={20} color={typeInfo.color} />
                       </View>
-                      <Text style={styles.templateTitle}>{tpl.title}</Text>
-                      <Text style={styles.templateTime}>{tpl.time}</Text>
+                      <Text style={[styles.templateTitle, { color: t.darkText }]}>{tpl.title}</Text>
+                      <Text style={[styles.templateTime, { color: t.lightText }]}>{tpl.time}</Text>
                     </TouchableOpacity>
                   );
                 })}
@@ -196,13 +197,14 @@ export const RemindersScreen: React.FC = () => {
       )}
 
       <BottomSheet visible={showAdd} onClose={() => setShowAdd(false)} title="New Reminder">
-        <Text style={styles.fieldLabel}>Type</Text>
+        <Text style={[styles.fieldLabel, { color: t.darkText }]}>Type</Text>
         <View style={styles.typeGrid}>
           {REMINDER_TYPES.map((rt) => (
             <TouchableOpacity
               key={rt.key}
               style={[
                 styles.typeChip,
+                { backgroundColor: t.card, borderColor: t.border },
                 selectedType === rt.key && { backgroundColor: rt.color, borderColor: rt.color },
               ]}
               onPress={() => {
@@ -218,6 +220,7 @@ export const RemindersScreen: React.FC = () => {
               <Text
                 style={[
                   styles.typeChipText,
+                  { color: t.darkText },
                   selectedType === rt.key && { color: colors.white },
                 ]}
               >
@@ -242,13 +245,14 @@ export const RemindersScreen: React.FC = () => {
           icon="time-outline"
         />
 
-        <Text style={styles.fieldLabel}>Repeat</Text>
+        <Text style={[styles.fieldLabel, { color: t.darkText }]}>Repeat</Text>
         <View style={styles.repeatRow}>
           {REPEAT_OPTIONS.map((opt) => (
             <TouchableOpacity
               key={opt.key}
               style={[
                 styles.repeatPill,
+                { backgroundColor: t.card, borderColor: t.border },
                 repeatPattern === opt.key && { backgroundColor: colors.primary, borderColor: colors.primary },
               ]}
               onPress={() => setRepeatPattern(opt.key)}
@@ -256,6 +260,7 @@ export const RemindersScreen: React.FC = () => {
               <Text
                 style={[
                   styles.repeatPillText,
+                  { color: t.darkText },
                   repeatPattern === opt.key && { color: colors.white },
                 ]}
               >

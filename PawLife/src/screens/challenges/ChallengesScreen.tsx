@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, typography, borderRadius, shadows } from '../../theme';
+import { colors, spacing, typography, borderRadius, shadows, useTheme } from '../../theme';
 import { ScreenContainer, Button, Badge, Card } from '../../components';
 
 interface ChallengeData {
@@ -91,6 +91,7 @@ const LEADERBOARD = [
 ];
 
 export const ChallengesScreen: React.FC = () => {
+  const { colors: t } = useTheme();
   const [filter, setFilter] = useState<'active' | 'upcoming' | 'completed'>('active');
   const [detailChallenge, setDetailChallenge] = useState<ChallengeData | null>(null);
 
@@ -109,25 +110,25 @@ export const ChallengesScreen: React.FC = () => {
                   <Ionicons name={item.icon} size={22} color={item.color} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.challengeTitle}>{item.title}</Text>
-                  <Text style={styles.challengeDesc} numberOfLines={2}>{item.description}</Text>
+                  <Text style={[styles.challengeTitle, { color: t.darkText }]}>{item.title}</Text>
+                  <Text style={[styles.challengeDesc, { color: t.lightText }]} numberOfLines={2}>{item.description}</Text>
                 </View>
               </View>
 
               <View style={styles.metaRow}>
                 <View style={styles.metaItem}>
-                  <Ionicons name="calendar-outline" size={14} color={colors.lightText} />
-                  <Text style={styles.metaText}>{item.duration}</Text>
+                  <Ionicons name="calendar-outline" size={14} color={t.lightText} />
+                  <Text style={[styles.metaText, { color: t.lightText }]}>{item.duration}</Text>
                 </View>
                 <View style={styles.metaItem}>
-                  <Ionicons name="people-outline" size={14} color={colors.lightText} />
-                  <Text style={styles.metaText}>{item.participants}</Text>
+                  <Ionicons name="people-outline" size={14} color={t.lightText} />
+                  <Text style={[styles.metaText, { color: t.lightText }]}>{item.participants}</Text>
                 </View>
               </View>
 
               {item.joined ? (
                 <View style={styles.progressSection}>
-                  <View style={styles.progressBarBg}>
+                  <View style={[styles.progressBarBg, { backgroundColor: t.divider }]}>
                     <View
                       style={[styles.progressBarFill, { width: `${pct}%`, backgroundColor: item.color }]}
                     />

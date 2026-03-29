@@ -8,7 +8,7 @@ import {
   TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, typography, borderRadius, shadows } from '../../theme';
+import { colors, spacing, typography, borderRadius, shadows, useTheme } from '../../theme';
 import { Button, Input, Card } from '../../components';
 import { useStore } from '../../store/useStore';
 import { generateId, getActivityColor, getActivityIcon } from '../../utils/helpers';
@@ -33,6 +33,7 @@ export const LogActivitySheet: React.FC<LogActivitySheetProps> = ({
   onClose,
   onSave,
 }) => {
+  const { colors: t } = useTheme();
   const { addActivity, selectedDogId } = useStore();
   const [notes, setNotes] = useState('');
   const [saved, setSaved] = useState(false);

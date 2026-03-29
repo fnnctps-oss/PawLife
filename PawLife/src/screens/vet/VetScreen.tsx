@@ -10,7 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Card, Button, Input, ScreenContainer, BottomSheet, Badge, EmptyState } from '../../components';
-import { colors, gradients, spacing, typography, borderRadius, shadows } from '../../theme';
+import { colors, gradients, spacing, typography, borderRadius, shadows, useTheme } from '../../theme';
 import { useStore } from '../../store/useStore';
 import { generateId, formatDate } from '../../utils/helpers';
 import { VetAppointment } from '../../types';
@@ -39,6 +39,7 @@ const reasonIcons: Record<AppointmentReason, keyof typeof Ionicons.glyphMap> = {
 const REASONS: AppointmentReason[] = ['Checkup', 'Vaccination', 'Illness', 'Surgery', 'Dental', 'Other'];
 
 export const VetScreen: React.FC = () => {
+  const { colors: t } = useTheme();
   const { vetAppointments, addVetAppointment, selectedDogId } = useStore();
 
   const [activeTab, setActiveTab] = useState<TabType>('upcoming');
@@ -155,10 +156,10 @@ export const VetScreen: React.FC = () => {
           <View style={styles.cardHeaderLeft}>
             <View style={[styles.statusDot, { backgroundColor: isUpcoming ? colors.secondary : colors.placeholderText }]} />
             <View style={styles.cardTitleGroup}>
-              <Text style={styles.vetName} numberOfLines={1}>
+              <Text style={[styles.vetName, { color: t.darkText }]} numberOfLines={1}>
                 {appointment.vetName}
               </Text>
-              <Text style={styles.clinicName} numberOfLines={1}>
+              <Text style={[styles.clinicName, { color: t.lightText }]} numberOfLines={1}>
                 {appointment.clinicName}
               </Text>
             </View>
@@ -168,19 +169,19 @@ export const VetScreen: React.FC = () => {
 
         <View style={styles.cardDetails}>
           <View style={styles.detailRow}>
-            <Ionicons name="calendar-outline" size={16} color={colors.lightText} />
-            <Text style={styles.detailText}>{getRelativeDate(appointment.date)}</Text>
+            <Ionicons name="calendar-outline" size={16} color={t.lightText} />
+            <Text style={[styles.detailText, { color: t.bodyText }]}>{getRelativeDate(appointment.date)}</Text>
           </View>
           <View style={styles.detailRow}>
-            <Ionicons name="time-outline" size={16} color={colors.lightText} />
-            <Text style={styles.detailText}>{formatAppointmentTime(appointment.date)}</Text>
+            <Ionicons name="time-outline" size={16} color={t.lightText} />
+            <Text style={[styles.detailText, { color: t.bodyText }]}>{formatAppointmentTime(appointment.date)}</Text>
           </View>
         </View>
 
         {appointment.notes && (
           <View style={styles.notesRow}>
-            <Ionicons name="document-text-outline" size={14} color={colors.lightText} />
-            <Text style={styles.notesText} numberOfLines={2}>
+            <Ionicons name="document-text-outline" size={14} color={t.lightText} />
+            <Text style={[styles.notesText, { color: t.lightText }]} numberOfLines={2}>
               {appointment.notes}
             </Text>
           </View>
@@ -200,7 +201,7 @@ export const VetScreen: React.FC = () => {
     <ScreenContainer scrollable={false} padded={false}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.screenTitle}>Vet Appointments</Text>
+        <Text style={[styles.screenTitle, { color: t.darkText }]}>Vet Appointments</Text>
         <TouchableOpacity
           style={styles.addHeaderButton}
           onPress={() => setSheetVisible(true)}
@@ -212,7 +213,7 @@ export const VetScreen: React.FC = () => {
 
       {/* Segment Control */}
       <View style={styles.segmentContainer}>
-        <View style={styles.segmentControl}>
+        <View style={[styles.segmentControl, { backgroundColor: t.divider }]}>
           <TouchableOpacity
             style={[styles.segmentButton, activeTab === 'upcoming' && styles.segmentButtonActive]}
             onPress={() => setActiveTab('upcoming')}
@@ -228,7 +229,7 @@ export const VetScreen: React.FC = () => {
                 <Text style={styles.segmentTextActive}>Upcoming</Text>
               </LinearGradient>
             ) : (
-              <Text style={styles.segmentText}>Upcoming</Text>
+              <Text style={[styles.segmentText, { color: t.lightText }]}>Upcoming</Text>
             )}
           </TouchableOpacity>
 
@@ -247,7 +248,7 @@ export const VetScreen: React.FC = () => {
                 <Text style={styles.segmentTextActive}>Past</Text>
               </LinearGradient>
             ) : (
-              <Text style={styles.segmentText}>Past</Text>
+              <Text style={[styles.segmentText, { color: t.lightText }]}>Past</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -320,7 +321,7 @@ export const VetScreen: React.FC = () => {
         </View>
 
         {/* Reason Selector Pills */}
-        <Text style={styles.fieldLabel}>Reason</Text>
+        <Text style={[styles.fieldLabel, { color: t.darkText }]}>Reason</Text>
         <View style={styles.reasonPills}>
           {REASONS.map((reason) => {
             const isSelected = selectedReason === reason;
@@ -328,16 +329,16 @@ export const VetScreen: React.FC = () => {
             return (
               <TouchableOpacity
                 key={reason}
-                style={[styles.reasonPill, isSelected && styles.reasonPillActive]}
+                style={[styles.reasonPill, { backgroundColor: t.divider }, isSelected && styles.reasonPillActive]}
                 onPress={() => setSelectedReason(reason)}
                 activeOpacity={0.7}
               >
                 <Ionicons
                   name={icon}
                   size={14}
-                  color={isSelected ? colors.white : colors.bodyText}
+                  color={isSelected ? colors.white : t.bodyText}
                 />
-                <Text style={[styles.reasonPillText, isSelected && styles.reasonPillTextActive]}>
+                <Text style={[styles.reasonPillText, { color: t.bodyText }, isSelected && styles.reasonPillTextActive]}>
                   {reason}
                 </Text>
               </TouchableOpacity>
@@ -346,10 +347,10 @@ export const VetScreen: React.FC = () => {
         </View>
 
         {/* Notes */}
-        <Text style={styles.fieldLabel}>Notes</Text>
-        <View style={styles.textAreaContainer}>
+        <Text style={[styles.fieldLabel, { color: t.darkText }]}>Notes</Text>
+        <View style={[styles.textAreaContainer, { backgroundColor: t.card, borderColor: t.border }]}>
           <TextInput
-            style={styles.textArea}
+            style={[styles.textArea, { color: t.darkText }]}
             placeholder="Any details or concerns..."
             placeholderTextColor={colors.placeholderText}
             value={notes}
@@ -361,10 +362,10 @@ export const VetScreen: React.FC = () => {
         </View>
 
         {/* Reminder Toggle */}
-        <View style={styles.reminderToggleRow}>
+        <View style={[styles.reminderToggleRow, { backgroundColor: t.divider }]}>
           <View style={styles.reminderToggleLeft}>
             <Ionicons name="notifications-outline" size={20} color={colors.primary} />
-            <Text style={styles.reminderToggleLabel}>Set Reminder</Text>
+            <Text style={[styles.reminderToggleLabel, { color: t.darkText }]}>Set Reminder</Text>
           </View>
           <Switch
             value={reminderEnabled}
@@ -399,7 +400,6 @@ const styles = StyleSheet.create({
   },
   screenTitle: {
     ...typography.title2,
-    color: colors.darkText,
   },
   addHeaderButton: {
     padding: spacing.xs,
@@ -410,7 +410,6 @@ const styles = StyleSheet.create({
   },
   segmentControl: {
     flexDirection: 'row',
-    backgroundColor: colors.divider,
     borderRadius: borderRadius.md,
     padding: 3,
   },
@@ -435,7 +434,6 @@ const styles = StyleSheet.create({
   segmentText: {
     ...typography.subhead,
     fontWeight: '500',
-    color: colors.lightText,
   },
   segmentTextActive: {
     ...typography.subhead,
@@ -473,12 +471,10 @@ const styles = StyleSheet.create({
   },
   vetName: {
     ...typography.headline,
-    color: colors.darkText,
     marginBottom: 2,
   },
   clinicName: {
     ...typography.footnote,
-    color: colors.lightText,
   },
   cardDetails: {
     flexDirection: 'row',
@@ -493,7 +489,6 @@ const styles = StyleSheet.create({
   },
   detailText: {
     ...typography.subhead,
-    color: colors.bodyText,
   },
   notesRow: {
     flexDirection: 'row',
@@ -504,7 +499,6 @@ const styles = StyleSheet.create({
   },
   notesText: {
     ...typography.footnote,
-    color: colors.lightText,
     flex: 1,
   },
   reminderIndicator: {
@@ -533,7 +527,6 @@ const styles = StyleSheet.create({
   fieldLabel: {
     ...typography.subhead,
     fontWeight: '600',
-    color: colors.darkText,
     marginBottom: spacing.sm,
   },
   reasonPills: {
@@ -549,7 +542,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.full,
-    backgroundColor: colors.divider,
     borderWidth: 1.5,
     borderColor: colors.transparent,
   },
@@ -560,17 +552,14 @@ const styles = StyleSheet.create({
   reasonPillText: {
     ...typography.footnote,
     fontWeight: '500',
-    color: colors.bodyText,
   },
   reasonPillTextActive: {
     color: colors.white,
     fontWeight: '600',
   },
   textAreaContainer: {
-    backgroundColor: colors.white,
     borderRadius: borderRadius.md,
     borderWidth: 1.5,
-    borderColor: colors.border,
     paddingHorizontal: spacing.base,
     paddingVertical: spacing.md,
     marginBottom: spacing.base,
@@ -578,14 +567,12 @@ const styles = StyleSheet.create({
   },
   textArea: {
     ...typography.body,
-    color: colors.darkText,
     minHeight: 64,
   },
   reminderToggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: colors.divider,
     borderRadius: borderRadius.md,
     paddingHorizontal: spacing.base,
     paddingVertical: spacing.md,
@@ -599,7 +586,6 @@ const styles = StyleSheet.create({
   reminderToggleLabel: {
     ...typography.callout,
     fontWeight: '500',
-    color: colors.darkText,
   },
   saveButtonContainer: {
     marginTop: spacing.sm,

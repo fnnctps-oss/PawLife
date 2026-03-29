@@ -10,7 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Card, Button, Input, ScreenContainer, BottomSheet, Badge, EmptyState } from '../../components';
-import { colors, gradients, spacing, typography, borderRadius, shadows } from '../../theme';
+import { colors, gradients, spacing, typography, borderRadius, shadows, useTheme } from '../../theme';
 import { useStore } from '../../store/useStore';
 import { generateId, formatDate } from '../../utils/helpers';
 import { Injection } from '../../types';
@@ -59,6 +59,7 @@ const statusConfig: Record<DueStatus, { color: string; bgColor: string; label: s
 };
 
 export const VaccinationScreen: React.FC = () => {
+  const { colors: t } = useTheme();
   const { injections, addInjection, selectedDogId } = useStore();
 
   const [sheetVisible, setSheetVisible] = useState(false);
@@ -126,8 +127,8 @@ export const VaccinationScreen: React.FC = () => {
       <View key={injection.id} style={styles.timelineEntry}>
         {/* Timeline connector */}
         <View style={styles.timelineLeft}>
-          <View style={[styles.timelineDot, { backgroundColor: config.color }]} />
-          {!isLast && <View style={styles.timelineLine} />}
+          <View style={[styles.timelineDot, { backgroundColor: config.color, borderColor: t.card }]} />
+          {!isLast && <View style={[styles.timelineLine, { backgroundColor: t.border }]} />}
         </View>
 
         {/* Card content */}
