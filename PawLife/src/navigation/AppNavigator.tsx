@@ -22,6 +22,7 @@ import { RemindersScreen } from '../screens/reminders/RemindersScreen';
 import { VetScreen } from '../screens/vet/VetScreen';
 import { VaccinationScreen } from '../screens/vet/VaccinationScreen';
 import { ChallengesScreen } from '../screens/challenges/ChallengesScreen';
+import { WeeklyPawReport } from '../screens/reports/WeeklyPawReport';
 import { BottomSheet } from '../components';
 import { LogActivitySheet } from '../screens/activities/LogActivitySheet';
 import { ActivityType } from '../types';
@@ -181,6 +182,11 @@ export const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="Challenges"
               component={ChallengesScreen}
+              options={{ presentation: 'card' }}
+            />
+            <Stack.Screen
+              name="WeeklyPawReport"
+              component={WeeklyPawReport}
               options={{ presentation: 'card' }}
             />
           </>
