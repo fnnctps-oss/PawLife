@@ -9,11 +9,10 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  FlatList,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Button, Input, ScreenContainer, Avatar, Card } from '../../components';
+import { Ionicons } from '@expo/vector-icons';
 import { generateId } from '../../utils/helpers';
 import { useStore } from '../../store/useStore';
 import { useTheme } from '../../theme';
@@ -47,12 +46,8 @@ const COMMON_BREEDS = [
   'Mixed Breed',
 ];
 
-import { colors } from '../../theme/colors';
-const PRIMARY_COLOR = colors.primary;
-const BACKGROUND_COLOR = colors.background;
-
 const AddDogScreen: React.FC = () => {
-  const { colors: t } = useTheme();
+  const { colors: t, isDark } = useTheme();
   const navigation = useNavigation();
   const addDog = useStore((state) => state.addDog);
 
@@ -60,13 +55,11 @@ const AddDogScreen: React.FC = () => {
   const [breed, setBreed] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [weight, setWeight] = useState('');
-  const [weightUnit, setWeightUnit] = useState<'kg' | 'lbs'>('kg');
   const [gender, setGender] = useState<'male' | 'female' | null>(null);
-  const [color, setColor] = useState('');
-  const [microchipId, setMicrochipId] = useState('');
   const [allergies, setAllergies] = useState<string[]>([]);
   const [allergyInput, setAllergyInput] = useState('');
   const [showBreedSuggestions, setShowBreedSuggestions] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const filteredBreeds = useMemo(() => {
     if (!breed.trim()) return [];
@@ -107,7 +100,11 @@ const AddDogScreen: React.FC = () => {
 
   const handleSave = useCallback(() => {
     if (!name.trim()) {
-      Alert.alert('Missing Information', 'Please enter your dog\'s name.');
+      Alert.alert('Missing Information', "Please enter your dog's name.");
+      return;
+    }
+    if (!breed.trim()) {
+      Alert.alert('Missing Information', "Please enter your dog's breed.");
       return;
     }
 
@@ -118,21 +115,26 @@ const AddDogScreen: React.FC = () => {
       photo: '',
       dateOfBirth: dateOfBirth.trim(),
       weight: weight ? parseFloat(weight) : 0,
-      gender: gender || 'male' as const,
-      color: color.trim(),
-      microchipId: microchipId.trim() || undefined,
+      gender: (gender || 'male') as 'male' | 'female',
+      color: '',
       allergies,
       createdAt: new Date().toISOString(),
     };
 
     addDog(dog);
     navigation.goBack();
-  }, [
-    name, breed, dateOfBirth, weight, weightUnit,
-    gender, color, microchipId, allergies, addDog, navigation,
-  ]);
+  }, [name, breed, dateOfBirth, weight, gender, allergies, addDog, navigation]);
 
   const displayName = name.trim() || 'Dog';
+
+  const inputStyle = (field: string) => [
+    styles.input,
+    {
+      backgroundColor: isDark ? t.surface : '#FFFFFF',
+      borderColor: focusedField === field ? '#FF8C42' : (isDark ? t.border : '#F1F5F9'),
+      color: t.darkText,
+    },
+  ];
 
   return (
     <KeyboardAvoidingView
@@ -140,106 +142,157 @@ const AddDogScreen: React.FC = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
-        style={[styles.container, { backgroundColor: t.background }]}
+        style={[styles.flex, { backgroundColor: isDark ? t.background : '#F8FAFC' }]}
         contentContainerStyle={styles.contentContainer}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Avatar Section */}
+        {/* Amber Gradient Header */}
+        <LinearGradient
+          colors={['#FF8C42', '#E07030'] as const}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.header}
+        >
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Add your buddy</Text>
+          <Text style={styles.headerSubtitle}>{"Let's set up their profile \uD83D\uDC3E"}</Text>
+        </LinearGradient>
+
+        {/* Photo Avatar */}
         <View style={styles.avatarSection}>
           <TouchableOpacity onPress={handleAvatarPress} activeOpacity={0.8}>
-            <View style={styles.avatarContainer}>
-              <View style={styles.avatarPlaceholder}>
-                <Text style={styles.avatarEmoji}>🐕</Text>
-              </View>
-              <View style={styles.cameraIconOverlay}>
-                <Text style={styles.cameraIcon}>📷</Text>
-              </View>
+            <View style={[styles.avatarContainer, isDark && { backgroundColor: t.surface }]}>
+              <Ionicons name="camera" size={40} color="#CBD5E1" />
             </View>
           </TouchableOpacity>
-          <Text style={styles.avatarHint}>Tap to add a photo</Text>
         </View>
 
-        {/* Basic Info Card */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Basic Information</Text>
-
-          {/* Name */}
+        {/* Form */}
+        <View style={styles.formContainer}>
+          {/* Dog's Name */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Name *</Text>
+            <Text style={[styles.label, { color: t.darkText }]}>
+              {"Dog's Name"} <Text style={styles.required}>*</Text>
+            </Text>
             <TextInput
-              style={styles.input}
-              placeholder="What's your dog's name?"
-              placeholderTextColor="#C4B5A4"
+              style={inputStyle('name')}
+              placeholder="e.g. Luna"
+              placeholderTextColor={t.placeholderText}
               value={name}
               onChangeText={setName}
+              onFocus={() => setFocusedField('name')}
+              onBlur={() => setFocusedField(null)}
               autoCapitalize="words"
             />
           </View>
 
           {/* Breed */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Breed</Text>
+            <Text style={[styles.label, { color: t.darkText }]}>
+              Breed <Text style={styles.required}>*</Text>
+            </Text>
             <TextInput
-              style={styles.input}
-              placeholder="Start typing to search breeds..."
-              placeholderTextColor="#C4B5A4"
+              style={inputStyle('breed')}
+              placeholder="e.g. Golden Retriever"
+              placeholderTextColor={t.placeholderText}
               value={breed}
               onChangeText={(text) => {
                 setBreed(text);
                 setShowBreedSuggestions(true);
               }}
+              onFocus={() => {
+                setFocusedField('breed');
+                if (breed.trim()) setShowBreedSuggestions(true);
+              }}
               onBlur={() => {
+                setFocusedField(null);
                 setTimeout(() => setShowBreedSuggestions(false), 200);
               }}
               autoCapitalize="words"
             />
             {showBreedSuggestions && filteredBreeds.length > 0 && (
-              <View style={styles.suggestionsContainer}>
+              <View style={[styles.suggestionsContainer, {
+                backgroundColor: isDark ? t.surface : '#FFFFFF',
+                borderColor: isDark ? t.border : '#F1F5F9',
+              }]}>
                 {filteredBreeds.map((item) => (
                   <TouchableOpacity
                     key={item}
-                    style={styles.suggestionItem}
+                    style={[styles.suggestionItem, {
+                      borderBottomColor: isDark ? t.divider : '#F1F5F9',
+                    }]}
                     onPress={() => handleSelectBreed(item)}
                     activeOpacity={0.7}
                   >
-                    <Text style={styles.suggestionText}>{item}</Text>
+                    <Text style={[styles.suggestionText, { color: t.darkText }]}>{item}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
             )}
           </View>
 
-          {/* Date of Birth */}
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Date of Birth</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="MM/DD/YYYY"
-              placeholderTextColor="#C4B5A4"
-              value={dateOfBirth}
-              onChangeText={setDateOfBirth}
-              keyboardType="default"
-            />
+          {/* Weight and Date of Birth - 2 column row */}
+          <View style={styles.twoColumnRow}>
+            <View style={styles.halfField}>
+              <Text style={[styles.label, { color: t.darkText }]}>Weight (kg)</Text>
+              <TextInput
+                style={inputStyle('weight')}
+                placeholder="0.0"
+                placeholderTextColor={t.placeholderText}
+                value={weight}
+                onChangeText={setWeight}
+                onFocus={() => setFocusedField('weight')}
+                onBlur={() => setFocusedField(null)}
+                keyboardType="decimal-pad"
+              />
+            </View>
+            <View style={styles.halfField}>
+              <Text style={[styles.label, { color: t.darkText }]}>Date of Birth</Text>
+              <TextInput
+                style={inputStyle('dob')}
+                placeholder="MM/DD/YYYY"
+                placeholderTextColor={t.placeholderText}
+                value={dateOfBirth}
+                onChangeText={setDateOfBirth}
+                onFocus={() => setFocusedField('dob')}
+                onBlur={() => setFocusedField(null)}
+                keyboardType="default"
+              />
+            </View>
           </View>
 
           {/* Gender */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Gender</Text>
+            <Text style={[styles.label, { color: t.darkText }]}>Gender</Text>
             <View style={styles.genderRow}>
               <TouchableOpacity
                 style={[
                   styles.genderButton,
+                  {
+                    backgroundColor: isDark ? t.surface : '#FFFFFF',
+                    borderColor: gender === 'male' ? '#FF8C42' : (isDark ? t.border : '#F1F5F9'),
+                  },
                   gender === 'male' && styles.genderButtonActive,
                 ]}
                 onPress={() => setGender('male')}
                 activeOpacity={0.7}
               >
-                <Text style={styles.genderIcon}>♂</Text>
+                <Ionicons
+                  name="male"
+                  size={20}
+                  color={gender === 'male' ? '#FF8C42' : t.lightText}
+                />
                 <Text
                   style={[
                     styles.genderText,
-                    gender === 'male' && styles.genderTextActive,
+                    { color: gender === 'male' ? '#FF8C42' : t.lightText },
                   ]}
                 >
                   Male
@@ -248,16 +301,24 @@ const AddDogScreen: React.FC = () => {
               <TouchableOpacity
                 style={[
                   styles.genderButton,
+                  {
+                    backgroundColor: isDark ? t.surface : '#FFFFFF',
+                    borderColor: gender === 'female' ? '#FF8C42' : (isDark ? t.border : '#F1F5F9'),
+                  },
                   gender === 'female' && styles.genderButtonActive,
                 ]}
                 onPress={() => setGender('female')}
                 activeOpacity={0.7}
               >
-                <Text style={styles.genderIcon}>♀</Text>
+                <Ionicons
+                  name="female"
+                  size={20}
+                  color={gender === 'female' ? '#FF8C42' : t.lightText}
+                />
                 <Text
                   style={[
                     styles.genderText,
-                    gender === 'female' && styles.genderTextActive,
+                    { color: gender === 'female' ? '#FF8C42' : t.lightText },
                   ]}
                 >
                   Female
@@ -265,105 +326,19 @@ const AddDogScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
           </View>
-        </View>
-
-        {/* Physical Details Card */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Physical Details</Text>
-
-          {/* Weight */}
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Weight</Text>
-            <View style={styles.weightRow}>
-              <TextInput
-                style={[styles.input, styles.weightInput]}
-                placeholder="0.0"
-                placeholderTextColor="#C4B5A4"
-                value={weight}
-                onChangeText={setWeight}
-                keyboardType="decimal-pad"
-              />
-              <View style={styles.unitToggle}>
-                <TouchableOpacity
-                  style={[
-                    styles.unitButton,
-                    weightUnit === 'kg' && styles.unitButtonActive,
-                  ]}
-                  onPress={() => setWeightUnit('kg')}
-                  activeOpacity={0.7}
-                >
-                  <Text
-                    style={[
-                      styles.unitText,
-                      weightUnit === 'kg' && styles.unitTextActive,
-                    ]}
-                  >
-                    kg
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.unitButton,
-                    weightUnit === 'lbs' && styles.unitButtonActive,
-                  ]}
-                  onPress={() => setWeightUnit('lbs')}
-                  activeOpacity={0.7}
-                >
-                  <Text
-                    style={[
-                      styles.unitText,
-                      weightUnit === 'lbs' && styles.unitTextActive,
-                    ]}
-                  >
-                    lbs
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-
-          {/* Color */}
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Color</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="e.g. Golden, Black & Tan"
-              placeholderTextColor="#C4B5A4"
-              value={color}
-              onChangeText={setColor}
-              autoCapitalize="words"
-            />
-          </View>
-        </View>
-
-        {/* Additional Info Card */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Additional Information</Text>
-
-          {/* Microchip ID */}
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Microchip ID</Text>
-            <Text style={styles.optionalBadge}>Optional</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter microchip number"
-              placeholderTextColor="#C4B5A4"
-              value={microchipId}
-              onChangeText={setMicrochipId}
-              autoCapitalize="none"
-            />
-          </View>
 
           {/* Allergies */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Allergies</Text>
+            <Text style={[styles.label, { color: t.darkText }]}>Allergies</Text>
             <View style={styles.allergyInputRow}>
               <TextInput
-                style={[styles.input, styles.allergyInput]}
-                placeholder="Type allergy and press enter"
-                placeholderTextColor="#C4B5A4"
+                style={[...inputStyle('allergy'), styles.allergyInput]}
+                placeholder="Type allergy and press add"
+                placeholderTextColor={t.placeholderText}
                 value={allergyInput}
                 onChangeText={setAllergyInput}
+                onFocus={() => setFocusedField('allergy')}
+                onBlur={() => setFocusedField(null)}
                 onSubmitEditing={handleAddAllergy}
                 returnKeyType="done"
                 autoCapitalize="words"
@@ -373,45 +348,43 @@ const AddDogScreen: React.FC = () => {
                 onPress={handleAddAllergy}
                 activeOpacity={0.7}
               >
-                <Text style={styles.addAllergyButtonText}>+</Text>
+                <Ionicons name="add" size={24} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
             {allergies.length > 0 && (
               <View style={styles.tagsContainer}>
                 {allergies.map((tag) => (
-                  <View key={tag} style={styles.tag}>
+                  <View key={tag} style={[styles.tag, isDark && {
+                    backgroundColor: 'rgba(255,140,66,0.15)',
+                    borderColor: 'rgba(255,140,66,0.3)',
+                  }]}>
                     <Text style={styles.tagText}>{tag}</Text>
                     <TouchableOpacity
                       onPress={() => handleRemoveAllergy(tag)}
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
-                      <Text style={styles.tagRemove}>✕</Text>
+                      <Ionicons name="close-circle" size={16} color="#CC6B2E" />
                     </TouchableOpacity>
                   </View>
                 ))}
               </View>
             )}
           </View>
-        </View>
 
-        {/* Save Button */}
-        <TouchableOpacity
-          style={styles.saveButton}
-          onPress={handleSave}
-          activeOpacity={0.85}
-        >
-          <LinearGradient
-            colors={['#FF8C42', '#FF6B1A']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.saveButtonGradient}
+          {/* Submit Button */}
+          <TouchableOpacity
+            style={styles.submitButton}
+            onPress={handleSave}
+            activeOpacity={0.85}
           >
-            <Text style={styles.pawIcon}>🐾</Text>
-            <Text style={styles.saveButtonText}>Add {displayName}</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+            <Ionicons name="add-circle-outline" size={22} color="#FFFFFF" />
+            <Text style={styles.submitButtonText}>
+              {`Add ${displayName} \uD83D\uDC3E`}
+            </Text>
+          </TouchableOpacity>
 
-        <View style={styles.bottomSpacer} />
+          <View style={styles.bottomSpacer} />
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -421,124 +394,102 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
-  container: {
-    flex: 1,
-    backgroundColor: BACKGROUND_COLOR,
-  },
   contentContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
     paddingBottom: 40,
+  },
+
+  // Header
+  header: {
+    paddingTop: Platform.OS === 'ios' ? 60 : 44,
+    paddingBottom: 48,
+    paddingHorizontal: 24,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  headerTitle: {
+    fontSize: 30,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: '#FFECD2',
+    fontWeight: '500',
   },
 
   // Avatar
   avatarSection: {
     alignItems: 'center',
-    marginBottom: 28,
+    marginTop: -48,
+    marginBottom: 24,
+    zIndex: 10,
   },
   avatarContainer: {
-    position: 'relative',
-    width: 120,
-    height: 120,
-  },
-  avatarPlaceholder: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#FFF',
+    width: 128,
+    height: 128,
+    borderRadius: 64,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 6,
-    borderWidth: 3,
-    borderColor: PRIMARY_COLOR,
-  },
-  avatarEmoji: {
-    fontSize: 48,
-  },
-  cameraIconOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: PRIMARY_COLOR,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  cameraIcon: {
-    fontSize: 18,
-  },
-  avatarHint: {
-    marginTop: 10,
-    fontSize: 14,
-    color: '#A89580',
-    fontWeight: '500',
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 8,
   },
 
-  // Cards
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+  // Form
+  formContainer: {
+    paddingHorizontal: 24,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#3D2C1E',
-    marginBottom: 16,
-  },
-
-  // Fields
   fieldContainer: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#6B5744',
+    fontWeight: '700',
     marginBottom: 8,
   },
-  optionalBadge: {
-    fontSize: 12,
-    color: '#A89580',
-    fontWeight: '500',
-    marginTop: -6,
-    marginBottom: 8,
+  required: {
+    color: '#FF4D4D',
   },
   input: {
-    backgroundColor: '#FAFAF7',
-    borderWidth: 1,
-    borderColor: '#E8E0D8',
-    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#F1F5F9',
+    borderRadius: 16,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 16,
     fontSize: 16,
-    color: '#3D2C1E',
+  },
+
+  // Two column row
+  twoColumnRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 20,
+  },
+  halfField: {
+    flex: 1,
   },
 
   // Breed suggestions
   suggestionsContainer: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 16,
     marginTop: 4,
-    borderWidth: 1,
-    borderColor: '#E8E0D8',
+    borderWidth: 2,
+    borderColor: '#F1F5F9',
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -548,13 +499,12 @@ const styles = StyleSheet.create({
   },
   suggestionItem: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#F0E8E0',
+    borderBottomColor: '#F1F5F9',
   },
   suggestionText: {
     fontSize: 15,
-    color: '#3D2C1E',
   },
 
   // Gender
@@ -567,60 +517,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#E8E0D8',
-    backgroundColor: '#FAFAF7',
+    paddingVertical: 16,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#F1F5F9',
+    backgroundColor: '#FFFFFF',
     gap: 8,
   },
   genderButtonActive: {
-    borderColor: PRIMARY_COLOR,
-    backgroundColor: '#FFF3EB',
-  },
-  genderIcon: {
-    fontSize: 20,
+    backgroundColor: '#FFF7ED',
   },
   genderText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#A89580',
-  },
-  genderTextActive: {
-    color: PRIMARY_COLOR,
-  },
-
-  // Weight
-  weightRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  weightInput: {
-    flex: 1,
-  },
-  unitToggle: {
-    flexDirection: 'row',
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#E8E0D8',
-    overflow: 'hidden',
-  },
-  unitButton: {
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-    backgroundColor: '#FAFAF7',
-  },
-  unitButtonActive: {
-    backgroundColor: PRIMARY_COLOR,
-  },
-  unitText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#A89580',
-  },
-  unitTextActive: {
-    color: '#FFFFFF',
   },
 
   // Allergies
@@ -633,18 +542,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   addAllergyButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: PRIMARY_COLOR,
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: '#FF8C42',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  addAllergyButtonText: {
-    fontSize: 24,
-    color: '#FFFFFF',
-    fontWeight: '600',
-    marginTop: -2,
   },
   tagsContainer: {
     flexDirection: 'row',
@@ -655,7 +558,7 @@ const styles = StyleSheet.create({
   tag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF3EB',
+    backgroundColor: '#FFF7ED',
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 8,
@@ -665,37 +568,22 @@ const styles = StyleSheet.create({
   },
   tagText: {
     fontSize: 14,
-    color: PRIMARY_COLOR,
+    color: '#FF8C42',
     fontWeight: '600',
   },
-  tagRemove: {
-    fontSize: 12,
-    color: '#CC6B2E',
-    fontWeight: '700',
-  },
 
-  // Save button
-  saveButton: {
-    marginTop: 8,
-    borderRadius: 16,
-    overflow: 'hidden',
-    shadowColor: PRIMARY_COLOR,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  saveButtonGradient: {
+  // Submit button
+  submitButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#1E293B',
+    borderRadius: 20,
     paddingVertical: 18,
+    marginTop: 12,
     gap: 10,
   },
-  pawIcon: {
-    fontSize: 20,
-  },
-  saveButtonText: {
+  submitButtonText: {
     fontSize: 18,
     fontWeight: '700',
     color: '#FFFFFF',

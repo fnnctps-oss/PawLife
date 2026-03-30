@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,12 +6,12 @@ import {
   TouchableOpacity,
   Alert,
   TextInput,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, borderRadius, shadows, useTheme } from '../../theme';
-import { Button, Input, Card } from '../../components';
 import { useStore } from '../../store/useStore';
-import { generateId, getActivityColor, getActivityIcon } from '../../utils/helpers';
+import { generateId } from '../../utils/helpers';
 import { ActivityType } from '../../types';
 
 interface LogActivitySheetProps {
@@ -19,6 +19,22 @@ interface LogActivitySheetProps {
   onClose: () => void;
   onSave: () => void;
 }
+
+interface ActivityTypeOption {
+  type: ActivityType;
+  label: string;
+  icon: string;
+  color: string;
+  tint: string;
+}
+
+const ACTIVITY_TYPES: ActivityTypeOption[] = [
+  { type: 'walk', label: 'Walk', icon: 'footsteps', color: '#F59E0B', tint: '#FEF3C7' },
+  { type: 'food', label: 'Food', icon: 'restaurant', color: '#F97316', tint: '#FFF7ED' },
+  { type: 'water', label: 'Water', icon: 'water', color: '#3B82F6', tint: '#EFF6FF' },
+  { type: 'play', label: 'Play', icon: 'game-controller', color: '#8B5CF6', tint: '#F5F3FF' },
+  { type: 'medicine', label: 'Medicine', icon: 'medkit', color: '#F43F5E', tint: '#FFF1F2' },
+];
 
 const QUOTES = [
   '"The world would be a nicer place if everyone had the ability to love as unconditionally as a dog." — M.K. Clinton',
@@ -35,54 +51,17 @@ export const LogActivitySheet: React.FC<LogActivitySheetProps> = ({
 }) => {
   const { colors: t } = useTheme();
   const { addActivity, selectedDogId } = useStore();
+
+  const [selectedType, setSelectedType] = useState<ActivityType | null>(null);
   const [notes, setNotes] = useState('');
   const [saved, setSaved] = useState(false);
-
-  // Walk state
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [timerSeconds, setTimerSeconds] = useState(0);
-  const [distance, setDistance] = useState('');
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // Food state
-  const [mealType, setMealType] = useState<string>('breakfast');
-  const [foodBrand, setFoodBrand] = useState('');
-  const [portion, setPortion] = useState<string>('medium');
-
-  // Water state
-  const [waterAmount, setWaterAmount] = useState<string>('medium');
-
-  // Play/Training/Grooming state
   const [duration, setDuration] = useState('');
-  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState<'small' | 'medium' | 'large'>('medium');
 
-  // Medicine state
-  const [medicineName, setMedicineName] = useState('');
-  const [dosage, setDosage] = useState('');
-  const [administeredBy, setAdministeredBy] = useState<string>('self');
+  const currentType = selectedType;
 
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
-
-  const toggleTimer = () => {
-    if (isTimerRunning) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      setIsTimerRunning(false);
-    } else {
-      timerRef.current = setInterval(() => {
-        setTimerSeconds((s) => s + 1);
-      }, 1000);
-      setIsTimerRunning(true);
-    }
-  };
-
-  const formatTimer = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  const getCurrentTypeOption = (): ActivityTypeOption | undefined => {
+    return ACTIVITY_TYPES.find((a) => a.type === currentType);
   };
 
   const handleSave = () => {
@@ -90,253 +69,217 @@ export const LogActivitySheet: React.FC<LogActivitySheetProps> = ({
       Alert.alert('No dog selected', 'Please add a dog first.');
       return;
     }
+    if (!currentType) return;
 
     const activity = {
       id: generateId(),
       dogId: selectedDogId,
-      type: activityType,
+      type: currentType,
       timestamp: new Date().toISOString(),
-      notes,
+      notes: notes || undefined,
       sharedToSocial: false,
-      duration: activityType === 'walk' ? Math.floor(timerSeconds / 60) : duration ? parseInt(duration) : undefined,
-      distance: distance ? parseFloat(distance) : undefined,
-      mealType: activityType === 'food' ? mealType as any : undefined,
-      foodBrand: activityType === 'food' ? foodBrand : undefined,
-      portion: activityType === 'food' ? portion as any : undefined,
-      waterAmount: activityType === 'water' ? waterAmount as any : undefined,
-      medicineName: activityType === 'medicine' || activityType === 'injection' ? medicineName : undefined,
-      dosage: activityType === 'medicine' || activityType === 'injection' ? dosage : undefined,
-      administeredBy: activityType === 'medicine' || activityType === 'injection' ? administeredBy as any : undefined,
+      duration: duration ? parseInt(duration, 10) : undefined,
+      waterAmount:
+        currentType === 'water'
+          ? (amount as 'small' | 'medium' | 'full')
+          : undefined,
+      portion:
+        currentType === 'food'
+          ? (amount as 'small' | 'medium' | 'large')
+          : undefined,
     };
 
     addActivity(activity);
     setSaved(true);
   };
 
-  const accentColor = getActivityColor(activityType);
-  const randomQuote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+  const typeOption = getCurrentTypeOption();
+  const accentColor = typeOption?.color ?? '#F59E0B';
 
+  // --- Saved confirmation ---
   if (saved) {
+    const randomQuote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
     return (
       <View style={styles.savedContainer}>
         <View style={[styles.savedIconBg, { backgroundColor: accentColor + '20' }]}>
           <Ionicons name="checkmark-circle" size={56} color={accentColor} />
         </View>
-        <Text style={styles.savedTitle}>Activity Logged!</Text>
-        <Text style={styles.savedQuote}>{randomQuote}</Text>
-        <Button title="Done" onPress={onSave} style={{ marginTop: spacing.xl }} />
+        <Text style={[styles.savedTitle, { color: t.darkText }]}>Activity Logged!</Text>
+        <Text style={[styles.savedQuote, { color: t.lightText }]}>{randomQuote}</Text>
+        <TouchableOpacity
+          style={[styles.saveButton, { backgroundColor: t.darkText, marginTop: spacing.xl }]}
+          onPress={onSave}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.saveButtonText, { color: t.surface }]}>Done</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
-  const renderPillSelector = (
-    options: { key: string; label: string }[],
-    selected: string,
-    onSelect: (key: string) => void
-  ) => (
-    <View style={styles.pillRow}>
-      {options.map((opt) => (
-        <TouchableOpacity
-          key={opt.key}
-          style={[
-            styles.pill,
-            selected === opt.key && { backgroundColor: accentColor, borderColor: accentColor },
-          ]}
-          onPress={() => onSelect(opt.key)}
-        >
-          <Text
-            style={[
-              styles.pillText,
-              selected === opt.key && { color: colors.white },
-            ]}
-          >
-            {opt.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
+  // --- Activity type grid (step 1) ---
+  if (selectedType === null) {
+    return (
+      <View style={styles.container}>
+        <Text style={[styles.headerTitle, { color: t.darkText }]}>Log Activity</Text>
+
+        <View style={styles.grid}>
+          {ACTIVITY_TYPES.map((item) => (
+            <TouchableOpacity
+              key={item.type}
+              style={[
+                styles.gridCard,
+                {
+                  backgroundColor: item.tint,
+                  borderColor: t.border,
+                },
+              ]}
+              onPress={() => setSelectedType(item.type)}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.gridIconContainer, { backgroundColor: item.color + '20' }]}>
+                <Ionicons name={item.icon as any} size={32} color={item.color} />
+              </View>
+              <Text style={[styles.gridLabel, { color: t.darkText }]}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    );
+  }
+
+  // --- Form (step 2) ---
+  const renderDurationInput = () => (
+    <View style={styles.fieldGroup}>
+      <Text style={[styles.fieldLabel, { color: t.darkText }]}>Duration (minutes)</Text>
+      <View style={[styles.inputRow, { backgroundColor: t.surface, borderColor: t.border }]}>
+        <Ionicons name="time-outline" size={20} color={t.lightText} style={styles.inputIcon} />
+        <TextInput
+          style={[styles.textInput, { color: t.darkText }]}
+          placeholder="30"
+          placeholderTextColor={t.placeholderText}
+          value={duration}
+          onChangeText={setDuration}
+          keyboardType="number-pad"
+        />
+      </View>
     </View>
   );
 
-  const renderWalkForm = () => (
-    <>
-      <View style={styles.timerContainer}>
-        <Text style={styles.timerText}>{formatTimer(timerSeconds)}</Text>
-        <TouchableOpacity
-          style={[styles.timerButton, { backgroundColor: isTimerRunning ? colors.error : accentColor }]}
-          onPress={toggleTimer}
-        >
-          <Ionicons
-            name={isTimerRunning ? 'pause' : 'play'}
-            size={28}
-            color={colors.white}
-          />
-        </TouchableOpacity>
-      </View>
-      <Input
-        label="Distance (km)"
-        placeholder="0.0"
-        value={distance}
-        onChangeText={setDistance}
-        keyboardType="decimal-pad"
-        icon="navigate-outline"
-      />
-    </>
-  );
-
-  const renderFoodForm = () => (
-    <>
-      <Text style={styles.fieldLabel}>Meal Type</Text>
-      {renderPillSelector(
-        [
-          { key: 'breakfast', label: 'Breakfast' },
-          { key: 'lunch', label: 'Lunch' },
-          { key: 'dinner', label: 'Dinner' },
-          { key: 'snack', label: 'Snack' },
-        ],
-        mealType,
-        setMealType
-      )}
-      <Input
-        label="Food Brand / Type"
-        placeholder="e.g., Royal Canin"
-        value={foodBrand}
-        onChangeText={setFoodBrand}
-        icon="restaurant-outline"
-      />
-      <Text style={styles.fieldLabel}>Portion</Text>
-      {renderPillSelector(
-        [
-          { key: 'small', label: 'Small' },
-          { key: 'medium', label: 'Medium' },
-          { key: 'large', label: 'Large' },
-        ],
-        portion,
-        setPortion
-      )}
-    </>
-  );
-
-  const renderWaterForm = () => (
-    <>
-      <Text style={styles.fieldLabel}>Amount</Text>
-      <View style={styles.waterRow}>
-        {(['small', 'medium', 'full'] as const).map((amt) => (
+  const renderAmountSelector = () => (
+    <View style={styles.fieldGroup}>
+      <Text style={[styles.fieldLabel, { color: t.darkText }]}>Amount</Text>
+      <View style={styles.amountRow}>
+        {(['small', 'medium', 'large'] as const).map((size) => (
           <TouchableOpacity
-            key={amt}
+            key={size}
             style={[
-              styles.waterOption,
-              waterAmount === amt && { borderColor: colors.secondary, backgroundColor: '#E8F1FB' },
+              styles.amountButton,
+              {
+                backgroundColor: amount === size ? accentColor : t.surface,
+                borderColor: amount === size ? accentColor : t.border,
+              },
             ]}
-            onPress={() => setWaterAmount(amt)}
+            onPress={() => setAmount(size)}
+            activeOpacity={0.7}
           >
-            <Ionicons
-              name="water"
-              size={amt === 'small' ? 24 : amt === 'medium' ? 32 : 40}
-              color={waterAmount === amt ? colors.secondary : colors.lightText}
-            />
             <Text
               style={[
-                styles.waterLabel,
-                waterAmount === amt && { color: colors.secondary, fontWeight: '600' },
+                styles.amountButtonText,
+                {
+                  color: amount === size ? '#FFFFFF' : t.darkText,
+                  fontWeight: amount === size ? '700' : '500',
+                },
               ]}
             >
-              {amt.charAt(0).toUpperCase() + amt.slice(1)}
+              {size.charAt(0).toUpperCase() + size.slice(1)}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
-    </>
+    </View>
   );
 
-  const renderGenericForm = () => (
-    <>
-      <Input
-        label="Duration (minutes)"
-        placeholder="30"
-        value={duration}
-        onChangeText={setDuration}
-        keyboardType="number-pad"
-        icon="time-outline"
-      />
-      <Input
-        label="Description"
-        placeholder="What did you do?"
-        value={description}
-        onChangeText={setDescription}
-        icon="create-outline"
-      />
-    </>
-  );
-
-  const renderMedicineForm = () => (
-    <>
-      <Input
-        label="Medicine / Vaccine Name"
-        placeholder="e.g., Rimadyl"
-        value={medicineName}
-        onChangeText={setMedicineName}
-        icon="medkit-outline"
-      />
-      <Input
-        label="Dosage"
-        placeholder="e.g., 25mg"
-        value={dosage}
-        onChangeText={setDosage}
-        icon="flask-outline"
-      />
-      <Text style={styles.fieldLabel}>Administered By</Text>
-      {renderPillSelector(
-        [
-          { key: 'self', label: 'Self' },
-          { key: 'vet', label: 'Vet' },
-        ],
-        administeredBy,
-        setAdministeredBy
-      )}
-    </>
-  );
-
-  const titles: Record<string, string> = {
-    walk: 'Log Walk',
-    food: 'Log Food',
-    water: 'Log Water',
-    play: 'Log Play',
-    training: 'Log Training',
-    grooming: 'Log Grooming',
-    medicine: 'Log Medicine',
-    injection: 'Log Injection',
-    vet_visit: 'Log Vet Visit',
-    custom: 'Log Activity',
+  const renderFormFields = () => {
+    switch (currentType) {
+      case 'walk':
+      case 'play':
+        return renderDurationInput();
+      case 'food':
+      case 'water':
+        return renderAmountSelector();
+      case 'medicine':
+      default:
+        return null;
+    }
   };
+
+  const typeLabel = typeOption?.label ?? 'Activity';
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={[styles.headerIcon, { backgroundColor: accentColor + '20' }]}>
-          <Ionicons name={getActivityIcon(activityType) as any} size={24} color={accentColor} />
+      {/* Header with back button */}
+      <View style={styles.formHeader}>
+        <TouchableOpacity
+          style={[styles.backButton, { backgroundColor: t.surface }]}
+          onPress={() => {
+            setSelectedType(null);
+            setNotes('');
+            setDuration('');
+            setAmount('medium');
+          }}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="chevron-back" size={22} color={t.darkText} />
+        </TouchableOpacity>
+        <View style={[styles.formHeaderIcon, { backgroundColor: accentColor + '20' }]}>
+          <Ionicons name={typeOption?.icon as any} size={24} color={accentColor} />
         </View>
-        <Text style={styles.title}>{titles[activityType] || 'Log Activity'}</Text>
+        <Text style={[styles.headerTitle, { color: t.darkText }]}>Log {typeLabel}</Text>
       </View>
 
-      {activityType === 'walk' && renderWalkForm()}
-      {activityType === 'food' && renderFoodForm()}
-      {activityType === 'water' && renderWaterForm()}
-      {(activityType === 'play' || activityType === 'training' || activityType === 'grooming') && renderGenericForm()}
-      {(activityType === 'medicine' || activityType === 'injection') && renderMedicineForm()}
-      {activityType === 'vet_visit' && renderGenericForm()}
-      {activityType === 'custom' && renderGenericForm()}
+      {/* Context-specific fields */}
+      {renderFormFields()}
 
-      <Input
-        label="Notes"
-        placeholder="Add any notes..."
-        value={notes}
-        onChangeText={setNotes}
-        multiline
-        numberOfLines={3}
-        icon="document-text-outline"
-      />
+      {/* Notes */}
+      <View style={styles.fieldGroup}>
+        <Text style={[styles.fieldLabel, { color: t.darkText }]}>Notes (optional)</Text>
+        <TextInput
+          style={[
+            styles.notesInput,
+            {
+              backgroundColor: t.surface,
+              borderColor: t.border,
+              color: t.darkText,
+            },
+          ]}
+          placeholder="Add any notes..."
+          placeholderTextColor={t.placeholderText}
+          value={notes}
+          onChangeText={setNotes}
+          multiline
+          numberOfLines={3}
+          textAlignVertical="top"
+        />
+      </View>
 
-      <Button title="Save" onPress={handleSave} style={{ marginTop: spacing.md }} />
+      {/* Add Photo */}
+      <TouchableOpacity
+        style={[styles.addPhotoButton, { borderColor: t.border }]}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="camera-outline" size={24} color={t.lightText} />
+        <Text style={[styles.addPhotoText, { color: t.lightText }]}>Add Photo</Text>
+      </TouchableOpacity>
+
+      {/* Save */}
+      <TouchableOpacity
+        style={[styles.saveButton, { backgroundColor: '#1E293B' }]}
+        onPress={handleSave}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.saveButtonText}>Save Activity</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -345,88 +288,146 @@ const styles = StyleSheet.create({
   container: {
     paddingBottom: spacing.xxl,
   },
-  header: {
+
+  // --- Header ---
+  headerTitle: {
+    ...typography.title3,
+    fontWeight: '700',
+  },
+  formHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: spacing.xl,
+    gap: spacing.sm,
   },
-  headerIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: spacing.md,
   },
-  title: {
-    ...typography.title3,
-    color: colors.darkText,
+  formHeaderIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // --- Grid ---
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: spacing.lg,
+  },
+  gridCard: {
+    width: '31%',
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.lg,
+    borderWidth: 2,
+  },
+  gridIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: borderRadius.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.sm,
+  },
+  gridLabel: {
+    ...typography.subhead,
+    fontWeight: '700',
+  },
+
+  // --- Form fields ---
+  fieldGroup: {
+    marginBottom: spacing.base,
   },
   fieldLabel: {
     ...typography.subhead,
     fontWeight: '600',
-    color: colors.darkText,
     marginBottom: spacing.sm,
   },
-  pillRow: {
+  inputRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginBottom: spacing.base,
-  },
-  pill: {
-    paddingHorizontal: spacing.base,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.full,
+    alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    height: 48,
   },
-  pillText: {
+  inputIcon: {
+    marginRight: spacing.sm,
+  },
+  textInput: {
+    flex: 1,
+    ...typography.body,
+  },
+
+  // --- Amount selector ---
+  amountRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  amountButton: {
+    flex: 1,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  amountButtonText: {
+    ...typography.subhead,
+  },
+
+  // --- Notes ---
+  notesInput: {
+    borderWidth: 1.5,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.md,
+    minHeight: 88,
+    ...typography.body,
+  },
+
+  // --- Add photo ---
+  addPhotoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing.base,
+    marginBottom: spacing.lg,
+  },
+  addPhotoText: {
     ...typography.subhead,
     fontWeight: '500',
-    color: colors.darkText,
   },
-  timerContainer: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-    paddingVertical: spacing.lg,
-  },
-  timerText: {
-    fontSize: 56,
-    fontWeight: '200',
-    color: colors.darkText,
-    letterSpacing: 2,
-    fontVariant: ['tabular-nums'],
-    marginBottom: spacing.base,
-  },
-  timerButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+
+  // --- Save button ---
+  saveButton: {
+    width: '100%',
+    paddingVertical: spacing.base,
+    borderRadius: borderRadius.xl,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  waterRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: spacing.base,
+  saveButtonText: {
+    ...typography.headline,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
-  waterOption: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.base,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    width: 100,
-    height: 100,
-  },
-  waterLabel: {
-    ...typography.caption1,
-    color: colors.lightText,
-    marginTop: spacing.xs,
-  },
+
+  // --- Saved state ---
   savedContainer: {
     alignItems: 'center',
     paddingVertical: spacing.xxxl,
@@ -441,15 +442,14 @@ const styles = StyleSheet.create({
   },
   savedTitle: {
     ...typography.title2,
-    color: colors.darkText,
     marginBottom: spacing.base,
   },
   savedQuote: {
     ...typography.subhead,
-    color: colors.lightText,
     textAlign: 'center',
     fontStyle: 'italic',
     lineHeight: 22,
     paddingHorizontal: spacing.lg,
+    marginBottom: spacing.base,
   },
 });

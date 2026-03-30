@@ -179,54 +179,87 @@ export const HomeScreen: React.FC = () => {
   // Render helpers
   // ---------------------------------------------------------------------------
 
-  const renderDogSelector = () => {
-    if (dogs.length <= 1) return null;
-    return (
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.dogSelectorContent}
-        style={styles.dogSelectorScroll}
-      >
-        {dogs.map((dog) => {
-          const isSelected = dog.id === selectedDogId;
-          return (
-            <TouchableOpacity
-              key={dog.id}
-              onPress={() => handleDogSwitch(dog.id)}
-              activeOpacity={0.7}
-              style={styles.dogSelectorItem}
-            >
-              <View style={[styles.dogAvatarRing, { borderColor: t.transparent }, isSelected && styles.dogAvatarRingActive]}>
-                <Avatar uri={dog.photo || undefined} name={dog.name} size={52} />
-              </View>
-              <Text
-                style={[
-                  styles.dogSelectorName,
-                  { color: t.bodyText },
-                  isSelected && [styles.dogSelectorNameActive, { color: colors.primary }],
-                ]}
-                numberOfLines={1}
+  const renderHeader = () => (
+    <LinearGradient
+      colors={['#FF8C42', '#E07030']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.headerGradient}
+    >
+      {/* Top row: greeting + avatar */}
+      <View style={styles.headerTopRow}>
+        <View style={styles.headerTextWrap}>
+          <Text style={styles.headerGreeting}>
+            {greetingEmoji} {greeting}, {user.displayName}
+          </Text>
+          <Text style={styles.headerDashboard}>Your Dashboard</Text>
+        </View>
+        <TouchableOpacity activeOpacity={0.8} onPress={() => Alert.alert('Profile', 'Navigate to profile.')}>
+          <Avatar uri={user.photoURL || undefined} name={user.displayName} size={44} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Dog selector carousel inside header */}
+      {dogs.length > 1 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.headerDogSelectorContent}
+          style={styles.headerDogSelectorScroll}
+        >
+          {dogs.map((dog) => {
+            const isSelected = dog.id === selectedDogId;
+            return (
+              <TouchableOpacity
+                key={dog.id}
+                onPress={() => handleDogSwitch(dog.id)}
+                activeOpacity={0.7}
+                style={styles.headerDogItem}
               >
-                {dog.name}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
-    );
-  };
+                <View
+                  style={[
+                    styles.headerDogAvatarRing,
+                    isSelected && styles.headerDogAvatarRingActive,
+                  ]}
+                >
+                  <Avatar uri={dog.photo || undefined} name={dog.name} size={48} />
+                </View>
+                <Text
+                  style={[
+                    styles.headerDogName,
+                    isSelected && styles.headerDogNameActive,
+                  ]}
+                  numberOfLines={1}
+                >
+                  {dog.name}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      )}
+    </LinearGradient>
+  );
 
   const renderCurrentDogCard = () => {
     if (!currentDog) return null;
     return (
-      <Card variant="elevated" style={styles.featuredCard}>
+      <View style={[styles.featuredCard, { backgroundColor: t.card }, ...([shadows.xl] as object[])]}>
         <View style={styles.featuredTop}>
-          <Avatar
-            uri={currentDog.photo || undefined}
-            name={currentDog.name}
-            size={72}
-          />
+          {/* Dog photo with health score badge */}
+          <View style={styles.featuredPhotoWrap}>
+            <View style={styles.featuredPhotoBorder}>
+              <Avatar
+                uri={currentDog.photo || undefined}
+                name={currentDog.name}
+                size={96}
+              />
+            </View>
+            {/* Health score badge */}
+            <View style={styles.healthScoreBadge}>
+              <Text style={styles.healthScoreText}>{'\uD83C\uDF1F'} 92%</Text>
+            </View>
+          </View>
           <View style={styles.featuredInfo}>
             <Text style={[styles.featuredName, { color: t.darkText }]}>{currentDog.name}</Text>
             <Text style={[styles.featuredBreed, { color: t.bodyText }]}>{currentDog.breed}</Text>
@@ -239,35 +272,22 @@ export const HomeScreen: React.FC = () => {
           <View style={styles.statItem}>
             <Ionicons name="footsteps-outline" size={18} color={colors.accent} />
             <Text style={[styles.statValue, { color: t.darkText }]}>5</Text>
-            <Text style={[styles.statLabel, { color: t.lightText }]}>Walks</Text>
+            <Text style={[styles.statLabel, { color: t.lightText }]}>WALKS</Text>
           </View>
           <View style={[styles.statDivider, { backgroundColor: t.border }]} />
           <View style={styles.statItem}>
             <Ionicons name="restaurant-outline" size={18} color={colors.primary} />
             <Text style={[styles.statValue, { color: t.darkText }]}>2</Text>
-            <Text style={[styles.statLabel, { color: t.lightText }]}>Meals</Text>
+            <Text style={[styles.statLabel, { color: t.lightText }]}>MEALS</Text>
           </View>
           <View style={[styles.statDivider, { backgroundColor: t.border }]} />
           <View style={styles.statItem}>
             <Ionicons name="water-outline" size={18} color={colors.secondary} />
             <Text style={[styles.statValue, { color: t.darkText }]}>3</Text>
-            <Text style={[styles.statLabel, { color: t.lightText }]}>Water</Text>
+            <Text style={[styles.statLabel, { color: t.lightText }]}>WATER</Text>
           </View>
         </View>
-
-        {/* Health score badge */}
-        <View style={styles.healthBadgeRow}>
-          <LinearGradient
-            colors={['#E5F7E8', '#D0F0D6']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.healthBadge}
-          >
-            <Ionicons name="heart-circle" size={18} color={colors.accentDark} />
-            <Text style={styles.healthBadgeText}>92% — Great Week!</Text>
-          </LinearGradient>
-        </View>
-      </Card>
+      </View>
     );
   };
 
@@ -275,46 +295,51 @@ export const HomeScreen: React.FC = () => {
     <View style={styles.section}>
       <Text style={[styles.sectionTitle, { color: t.darkText }]}>Today's Schedule</Text>
       {MOCK_SCHEDULE.length === 0 ? (
-        <Card style={styles.emptyScheduleCard}>
+        <View style={[styles.emptyScheduleCard, { backgroundColor: t.card }]}>
           <Ionicons name="calendar-outline" size={32} color={t.placeholderText} />
           <Text style={[styles.emptyScheduleText, { color: t.lightText }]}>No activities yet today</Text>
-        </Card>
+        </View>
       ) : (
-        <Card variant="default" style={styles.scheduleCard}>
-          {MOCK_SCHEDULE.map((item, idx) => {
+        <View style={styles.scheduleList}>
+          {MOCK_SCHEDULE.map((item) => {
             const status = STATUS_STYLES[item.status];
             const activityColor = getActivityColor(item.type);
             const iconName = getActivityIcon(item.type) as keyof typeof Ionicons.glyphMap;
-            const isLast = idx === MOCK_SCHEDULE.length - 1;
+            const isDone = item.status === 'done';
             return (
-              <View key={item.id} style={styles.scheduleRow}>
-                {/* Timeline connector */}
-                <View style={styles.timelineCol}>
-                  <View style={[styles.timelineDot, { backgroundColor: activityColor }]} />
-                  {!isLast && <View style={[styles.timelineLine, { backgroundColor: t.border }]} />}
-                </View>
-
-                {/* Content */}
-                <View style={[styles.scheduleContent, !isLast && [styles.scheduleContentBorder, { borderBottomColor: t.divider }]]}>
-                  <View style={styles.scheduleLeft}>
-                    <View style={[styles.scheduleIconWrap, { backgroundColor: activityColor + '1A' }]}>
-                      <Ionicons name={iconName} size={16} color={activityColor} />
-                    </View>
-                    <View style={styles.scheduleMeta}>
-                      <Text style={[styles.scheduleTitle, { color: t.darkText }]}>{item.title}</Text>
-                      <Text style={[styles.scheduleTime, { color: t.lightText }]}>{item.time}</Text>
-                    </View>
+              <View
+                key={item.id}
+                style={[
+                  styles.scheduleItemCard,
+                  { backgroundColor: t.card, borderColor: t.border },
+                  ...([shadows.sm] as object[]),
+                ]}
+              >
+                <View style={styles.scheduleLeft}>
+                  <View style={[styles.scheduleIconWrap, { backgroundColor: activityColor + '1A' }]}>
+                    <Ionicons name={iconName} size={22} color={activityColor} />
                   </View>
+                  <View style={styles.scheduleMeta}>
+                    <Text style={[styles.scheduleTitle, { color: t.darkText }]}>{item.title}</Text>
+                    <Text style={[styles.scheduleTime, { color: t.lightText }]}>{item.time}</Text>
+                  </View>
+                </View>
+                <View style={styles.scheduleRight}>
                   <View style={[styles.statusPill, { backgroundColor: status.bg }]}>
                     <Text style={[styles.statusPillText, { color: status.text }]}>
                       {status.label}
                     </Text>
                   </View>
+                  {isDone && (
+                    <View style={styles.checkmarkCircle}>
+                      <Ionicons name="checkmark-circle" size={22} color="#34C759" />
+                    </View>
+                  )}
                 </View>
               </View>
             );
           })}
-        </Card>
+        </View>
       )}
     </View>
   );
@@ -330,15 +355,21 @@ export const HomeScreen: React.FC = () => {
             onPress={() => handleQuickAction(action.key)}
             style={styles.actionCardTouch}
           >
-            <View style={[styles.actionCard, shadows.md, { backgroundColor: action.bg }]}>
-              <View style={[styles.actionIconCircle, { backgroundColor: action.accent + '25' }]}>
+            <View
+              style={[
+                styles.actionCard,
+                { backgroundColor: '#F8FAFC', borderColor: '#E2E8F0' },
+                ...([shadows.sm] as object[]),
+              ]}
+            >
+              <View style={[styles.actionIconCircle, { backgroundColor: action.accent + '20' }]}>
                 <Ionicons
                   name={action.icon as keyof typeof Ionicons.glyphMap}
-                  size={24}
+                  size={32}
                   color={action.accent}
                 />
               </View>
-              <Text style={[styles.actionLabel, { color: action.accent }]}>{action.label}</Text>
+              <Text style={[styles.actionLabel, { color: t.darkText }]}>{action.label}</Text>
             </View>
           </TouchableOpacity>
         ))}
@@ -375,13 +406,19 @@ export const HomeScreen: React.FC = () => {
   const renderMilestoneTeaser = () => (
     <View style={styles.section}>
       <LinearGradient
-        colors={gradients.warm as [string, string]}
+        colors={['#8B5CF6', '#6366F1']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.milestoneCard}
       >
+        {/* Decorative blurred circle top-right */}
+        <View style={styles.milestoneDecorCircle} />
+
         <View style={styles.milestoneInner}>
-          <Ionicons name="trophy" size={28} color={colors.white} style={styles.milestoneIcon} />
+          {/* Frosted glass trophy container */}
+          <View style={styles.milestoneTrophyWrap}>
+            <Ionicons name="trophy" size={28} color={colors.white} />
+          </View>
           <View style={styles.milestoneTextWrap}>
             <Text style={styles.milestoneTitle}>Almost there!</Text>
             <Text style={styles.milestoneBody}>
@@ -398,44 +435,30 @@ export const HomeScreen: React.FC = () => {
   // ---------------------------------------------------------------------------
 
   return (
-    <ScreenContainer scrollable backgroundColor={t.background}>
-      {/* Greeting */}
-      <View style={styles.greetingRow}>
-        <View>
-          <Text style={[styles.greeting, { color: t.darkText }]}>
-            {greetingEmoji} {greeting}, {user.displayName}
-          </Text>
-          <Text style={[styles.subtitle, { color: t.lightText }]}>Here's how your pups are doing</Text>
-        </View>
-        <TouchableOpacity
-          style={[styles.notificationBtn, { backgroundColor: t.surface }]}
-          activeOpacity={0.7}
-          onPress={() => Alert.alert('Notifications', 'No new notifications.')}
-        >
-          <Ionicons name="notifications-outline" size={24} color={t.darkText} />
-        </TouchableOpacity>
+    <ScreenContainer scrollable padded={false} backgroundColor={t.background}>
+      {/* Amber gradient header */}
+      {renderHeader()}
+
+      {/* Content area with padding */}
+      <View style={styles.contentPadded}>
+        {/* Featured dog card overlapping header */}
+        {renderCurrentDogCard()}
+
+        {/* Today's Schedule */}
+        {renderSchedule()}
+
+        {/* Quick Actions */}
+        {renderQuickActions()}
+
+        {/* Weekly Activity Chart */}
+        {renderWeeklyChart()}
+
+        {/* Milestone Teaser */}
+        {renderMilestoneTeaser()}
+
+        {/* Bottom spacer */}
+        <View style={{ height: spacing.massive }} />
       </View>
-
-      {/* Dog selector */}
-      {renderDogSelector()}
-
-      {/* Featured dog card */}
-      {renderCurrentDogCard()}
-
-      {/* Today's Schedule */}
-      {renderSchedule()}
-
-      {/* Quick Actions */}
-      {renderQuickActions()}
-
-      {/* Weekly Activity Chart */}
-      {renderWeeklyChart()}
-
-      {/* Milestone Teaser */}
-      {renderMilestoneTeaser()}
-
-      {/* Bottom spacer */}
-      <View style={{ height: spacing.massive }} />
     </ScreenContainer>
   );
 };
@@ -447,74 +470,91 @@ export default HomeScreen;
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
-  /* ---- Greeting ---- */
-  greetingRow: {
+  /* ---- Content wrapper (replaces ScreenContainer padding) ---- */
+  contentPadded: {
+    paddingHorizontal: 20,
+  },
+
+  /* ---- Amber Gradient Header ---- */
+  headerGradient: {
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xxl,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+  },
+  headerTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginTop: spacing.sm,
-    marginBottom: spacing.lg,
   },
-  greeting: {
-    ...typography.title2,
-    color: colors.darkText,
+  headerTextWrap: {
+    flex: 1,
+    marginRight: spacing.base,
   },
-  subtitle: {
+  headerGreeting: {
     ...typography.subhead,
-    color: colors.lightText,
-    marginTop: 2,
+    color: 'rgba(255,255,255,0.85)',
+    marginBottom: 4,
   },
-  notificationBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...((shadows.sm as object) ?? {}),
+  headerDashboard: {
+    ...typography.title2,
+    color: '#FFFFFF',
   },
 
-  /* ---- Dog Selector ---- */
-  dogSelectorScroll: {
-    marginBottom: spacing.lg,
-    marginHorizontal: -20, // extend to screen edges
+  /* Dog selector inside header */
+  headerDogSelectorScroll: {
+    marginTop: spacing.lg,
+    marginHorizontal: -20,
   },
-  dogSelectorContent: {
+  headerDogSelectorContent: {
     paddingHorizontal: 20,
     gap: spacing.base,
   },
-  dogSelectorItem: {
+  headerDogItem: {
     alignItems: 'center',
     width: 68,
   },
-  dogAvatarRing: {
-    borderRadius: 30,
+  headerDogAvatarRing: {
+    borderRadius: 28,
     padding: 3,
     borderWidth: 2,
-    borderColor: colors.transparent,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
-  dogAvatarRingActive: {
-    borderColor: colors.primary,
+  headerDogAvatarRingActive: {
+    borderColor: '#FFFFFF',
   },
-  dogSelectorName: {
+  headerDogName: {
     ...typography.caption1,
-    color: colors.bodyText,
+    color: 'rgba(255,255,255,0.7)',
     marginTop: spacing.xs,
     textAlign: 'center',
   },
-  dogSelectorNameActive: {
-    color: colors.primary,
+  headerDogNameActive: {
+    color: '#FFFFFF',
     fontWeight: '600',
   },
 
-  /* ---- Featured Card ---- */
+  /* ---- Featured Card (overlapping header) ---- */
   featuredCard: {
+    marginTop: -20,
+    borderRadius: 32,
+    padding: spacing.lg,
     marginBottom: spacing.lg,
   },
   featuredTop: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: spacing.base,
+  },
+  featuredPhotoWrap: {
+    position: 'relative',
+  },
+  featuredPhotoBorder: {
+    borderWidth: 4,
+    borderColor: '#FFFFFF',
+    borderRadius: 52,
+    ...((shadows.md as object) ?? {}),
   },
   featuredInfo: {
     marginLeft: spacing.base,
@@ -535,6 +575,24 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
+  /* Health score badge on photo */
+  healthScoreBadge: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    backgroundColor: '#10B981',
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  healthScoreText: {
+    ...typography.caption2,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+
   /* Stats row */
   statsRow: {
     flexDirection: 'row',
@@ -542,7 +600,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderRadius: borderRadius.md,
     paddingVertical: spacing.md,
-    marginBottom: spacing.md,
   },
   statItem: {
     flex: 1,
@@ -556,29 +613,13 @@ const styles = StyleSheet.create({
   statLabel: {
     ...typography.caption2,
     color: colors.lightText,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   statDivider: {
     width: 1,
     height: 32,
     backgroundColor: colors.border,
-  },
-
-  /* Health badge */
-  healthBadgeRow: {
-    alignItems: 'center',
-  },
-  healthBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.full,
-    gap: spacing.xs,
-  },
-  healthBadgeText: {
-    ...typography.footnote,
-    fontWeight: '600',
-    color: colors.accentDark,
   },
 
   /* ---- Section ---- */
@@ -591,56 +632,29 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
 
-  /* ---- Schedule ---- */
-  scheduleCard: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.sm,
+  /* ---- Schedule (standalone cards) ---- */
+  scheduleList: {
+    gap: spacing.sm,
+  },
+  scheduleItemCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.base,
+    borderRadius: 24,
+    borderWidth: 1,
   },
   emptyScheduleCard: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: spacing.xxl,
+    borderRadius: 24,
     gap: spacing.sm,
   },
   emptyScheduleText: {
     ...typography.subhead,
     color: colors.lightText,
-  },
-  scheduleRow: {
-    flexDirection: 'row',
-  },
-
-  /* Timeline */
-  timelineCol: {
-    width: 24,
-    alignItems: 'center',
-  },
-  timelineDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginTop: 14,
-  },
-  timelineLine: {
-    width: 2,
-    flex: 1,
-    backgroundColor: colors.border,
-    marginVertical: 2,
-  },
-
-  /* Schedule content */
-  scheduleContent: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingLeft: spacing.sm,
-    paddingRight: spacing.xs,
-  },
-  scheduleContentBorder: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.divider,
   },
   scheduleLeft: {
     flexDirection: 'row',
@@ -648,9 +662,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scheduleIconWrap: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: 48,
+    height: 48,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -667,6 +681,14 @@ const styles = StyleSheet.create({
     ...typography.caption1,
     color: colors.lightText,
     marginTop: 1,
+  },
+  scheduleRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  checkmarkCircle: {
+    marginLeft: 2,
   },
 
   /* Status pill */
@@ -687,7 +709,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   actionCardTouch: {
-    width: (SCREEN_WIDTH - 40 - spacing.md * 2) / 3, // 3 columns accounting for container padding + gap
+    width: (SCREEN_WIDTH - 40 - spacing.md * 2) / 3,
   },
   actionCard: {
     borderRadius: borderRadius.lg,
@@ -696,11 +718,12 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.sm,
     gap: spacing.sm,
+    borderWidth: 2,
   },
   actionIconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -745,17 +768,33 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  /* ---- Milestone Teaser ---- */
+  /* ---- Milestone Teaser (purple gradient) ---- */
   milestoneCard: {
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
+    overflow: 'hidden',
     ...((shadows.lg as object) ?? {}),
+  },
+  milestoneDecorCircle: {
+    position: 'absolute',
+    top: -20,
+    right: -20,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255,255,255,0.15)',
   },
   milestoneInner: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  milestoneIcon: {
+  milestoneTrophyWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: spacing.md,
   },
   milestoneTextWrap: {
