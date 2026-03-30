@@ -379,7 +379,12 @@ export const HomeScreen: React.FC = () => {
 
   const renderWeeklyChart = () => (
     <View style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: t.darkText }]}>Weekly Activity</Text>
+      <View style={styles.sectionHeaderRow}>
+        <Text style={[styles.sectionTitle, { color: t.darkText, marginBottom: 0 }]}>Weekly Activity</Text>
+        <TouchableOpacity onPress={() => (navigation as any).navigate('WeeklyPawReport')}>
+          <Text style={[styles.viewReportLink, { color: t.primary }]}>View Report</Text>
+        </TouchableOpacity>
+      </View>
       <Card variant="default" style={styles.chartCard}>
         <View style={styles.chartBars}>
           {MOCK_WEEKLY_ACTIVITY.map((entry) => {
@@ -731,6 +736,18 @@ const styles = StyleSheet.create({
     ...typography.caption1,
     fontWeight: '600',
     textAlign: 'center',
+  },
+
+  /* ---- Section header with link ---- */
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  viewReportLink: {
+    ...typography.subhead,
+    fontWeight: '600',
   },
 
   /* ---- Weekly Chart ---- */

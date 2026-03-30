@@ -233,14 +233,21 @@ export const SettingsScreen: React.FC = () => {
           icon="document-text"
           iconColor="#007AFF"
           label="Health Passport"
-          onPress={() => Alert.alert('Health Passport', 'PDF generation would start.')}
+          onPress={() => navigation.navigate('HealthPassport')}
         />
         <View style={styles.divider} />
         <SettingsRow
           icon="people"
           iconColor="#AF52DE"
           label="Breed Buddy"
-          onPress={() => Alert.alert('Breed Buddy', 'Connect with nearby same-breed owners.')}
+          onPress={() => navigation.navigate('BreedBuddy')}
+        />
+        <View style={styles.divider} />
+        <SettingsRow
+          icon="bar-chart"
+          iconColor="#FF9500"
+          label="Weekly Report"
+          onPress={() => navigation.navigate('WeeklyPawReport')}
         />
       </Card>
 

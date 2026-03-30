@@ -23,6 +23,8 @@ import { VetScreen } from '../screens/vet/VetScreen';
 import { VaccinationScreen } from '../screens/vet/VaccinationScreen';
 import { ChallengesScreen } from '../screens/challenges/ChallengesScreen';
 import { WeeklyPawReport } from '../screens/reports/WeeklyPawReport';
+import { HealthPassportScreen } from '../screens/health/HealthPassportScreen';
+import { BreedBuddyScreen } from '../screens/social/BreedBuddyScreen';
 import { BottomSheet } from '../components';
 import { LogActivitySheet } from '../screens/activities/LogActivitySheet';
 import { ActivityType } from '../types';
@@ -187,6 +189,16 @@ export const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="WeeklyPawReport"
               component={WeeklyPawReport}
+              options={{ presentation: 'card' }}
+            />
+            <Stack.Screen
+              name="HealthPassport"
+              component={HealthPassportScreen}
+              options={{ presentation: 'card' }}
+            />
+            <Stack.Screen
+              name="BreedBuddy"
+              component={BreedBuddyScreen}
               options={{ presentation: 'card' }}
             />
           </>
