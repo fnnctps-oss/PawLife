@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -88,15 +89,10 @@ export const SignUpScreen: React.FC = () => {
   };
 
   const handleSocialSignUp = (provider: string) => {
-    setUser({
-      id: '1',
-      email: `user@${provider}.com`,
-      displayName: `${provider} User`,
-      photoURL: '',
-      subscription: { plan: 'free' },
-      createdAt: new Date().toISOString(),
-    });
-    setAuthenticated(true);
+    Alert.alert(
+      `${provider} Sign Up`,
+      `${provider} sign-up requires native configuration. Use email/password for now.`,
+    );
   };
 
   return (

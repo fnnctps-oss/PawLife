@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,9 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
+  Share,
+  Linking,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -62,8 +65,32 @@ const THEME_OPTIONS: { key: ThemeMode; labelKey: string; icon: keyof typeof Ioni
 export const SettingsScreen: React.FC = () => {
   const { t: tr } = useTranslation();
   const navigation = useNavigation<any>();
-  const { user, dogs, themeMode, unitSystem, setThemeMode, setUnitSystem, setAuthenticated, setUser } = useStore();
+  const { user, dogs, activities, reminders, themeMode, unitSystem, setThemeMode, setUnitSystem, setAuthenticated, setUser } = useStore();
   const { colors: t, isDark } = useTheme();
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExportData = async () => {
+    setExporting(true);
+    try {
+      const exportPayload = {
+        exportedAt: new Date().toISOString(),
+        dogs,
+        activities,
+        reminders,
+      };
+      await Share.share({
+        message: JSON.stringify(exportPayload, null, 2),
+        title: 'PawLife Data Export',
+      });
+    } catch (err: any) {
+      if (err?.message !== 'User did not share') {
+        Alert.alert('Export Failed', 'Could not export your data. Please try again.');
+      }
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const handleSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -123,7 +150,7 @@ export const SettingsScreen: React.FC = () => {
                 iconColor={colors.primary}
                 label={dog.name}
                 value={dog.breed}
-                onPress={() => Alert.alert(dog.name, `${dog.breed}\n${dog.gender}`)}
+                onPress={() => navigation.navigate('AddDog', { dogId: dog.id })}
               />
               {idx < dogs.length - 1 && <View style={styles.divider} />}
             </React.Fragment>
@@ -170,7 +197,14 @@ export const SettingsScreen: React.FC = () => {
           icon="notifications"
           iconColor="#FF9500"
           label={tr('settings.notifications')}
-          rightElement={<Switch value={true} trackColor={{ false: colors.border, true: colors.primaryLight }} thumbColor={colors.primary} />}
+          rightElement={
+            <Switch
+              value={notificationsEnabled}
+              onValueChange={setNotificationsEnabled}
+              trackColor={{ false: colors.border, true: colors.primaryLight }}
+              thumbColor={colors.primary}
+            />
+          }
         />
         <View style={styles.divider} />
         <View style={styles.row}>
@@ -232,7 +266,8 @@ export const SettingsScreen: React.FC = () => {
           icon="download"
           iconColor="#34C759"
           label={tr('settings.exportData')}
-          onPress={() => Alert.alert('Export', 'Data export would start.')}
+          onPress={handleExportData}
+          rightElement={exporting ? <ActivityIndicator size="small" color={colors.primary} /> : undefined}
         />
         <View style={styles.divider} />
         <SettingsRow
@@ -264,21 +299,21 @@ export const SettingsScreen: React.FC = () => {
           icon="help-circle"
           iconColor="#FF9500"
           label={tr('settings.helpFaq')}
-          onPress={() => Alert.alert('Help', 'FAQ page would open.')}
+          onPress={() => Linking.openURL('mailto:support@pawlife.app?subject=PawLife%20Support')}
         />
         <View style={styles.divider} />
         <SettingsRow
           icon="mail"
           iconColor="#4A90D9"
           label={tr('settings.contactUs')}
-          onPress={() => Alert.alert('Contact', 'Email compose would open.')}
+          onPress={() => Linking.openURL('mailto:support@pawlife.app')}
         />
         <View style={styles.divider} />
         <SettingsRow
           icon="star"
           iconColor="#FFD60A"
           label={tr('settings.rateApp')}
-          onPress={() => Alert.alert('Thanks!', 'App Store rating would open.')}
+          onPress={() => Linking.openURL('https://apps.apple.com/app/pawlife')}
         />
       </Card>
 

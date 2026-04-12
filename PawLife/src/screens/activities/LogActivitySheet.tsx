@@ -7,6 +7,7 @@ import {
   Alert,
   TextInput,
   ScrollView,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, borderRadius, shadows, useTheme } from '../../theme';
@@ -14,6 +15,7 @@ import { useStore } from '../../store/useStore';
 import { generateId } from '../../utils/helpers';
 import { ActivityType } from '../../types';
 import { useWalkTracker } from '../../hooks/useWalkTracker';
+import { pickImageFromLibrary, takePhoto, showImagePickerAlert } from '../../utils/imagePicker';
 
 interface LogActivitySheetProps {
   activityType: ActivityType;
@@ -59,6 +61,7 @@ export const LogActivitySheet: React.FC<LogActivitySheetProps> = ({
   const [duration, setDuration] = useState('');
   const [amount, setAmount] = useState<'small' | 'medium' | 'large'>('medium');
   const [walkDistance, setWalkDistance] = useState(0);
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
 
   const walkTracker = useWalkTracker();
 
@@ -66,6 +69,19 @@ export const LogActivitySheet: React.FC<LogActivitySheetProps> = ({
 
   const getCurrentTypeOption = (): ActivityTypeOption | undefined => {
     return ACTIVITY_TYPES.find((a) => a.type === currentType);
+  };
+
+  const handleAddPhoto = () => {
+    showImagePickerAlert(
+      async () => {
+        const uri = await takePhoto();
+        if (uri) setPhotoUri(uri);
+      },
+      async () => {
+        const uri = await pickImageFromLibrary();
+        if (uri) setPhotoUri(uri);
+      },
+    );
   };
 
   const handleSave = () => {
@@ -91,6 +107,7 @@ export const LogActivitySheet: React.FC<LogActivitySheetProps> = ({
         currentType === 'food'
           ? (amount as 'small' | 'medium' | 'large')
           : undefined,
+      photo: photoUri || undefined,
     };
 
     addActivity(activity);
@@ -350,6 +367,7 @@ export const LogActivitySheet: React.FC<LogActivitySheetProps> = ({
             setNotes('');
             setDuration('');
             setAmount('medium');
+            setPhotoUri(null);
           }}
           activeOpacity={0.7}
         >
@@ -390,9 +408,20 @@ export const LogActivitySheet: React.FC<LogActivitySheetProps> = ({
       <TouchableOpacity
         style={[styles.addPhotoButton, { borderColor: t.border }]}
         activeOpacity={0.7}
+        onPress={handleAddPhoto}
       >
-        <Ionicons name="camera-outline" size={24} color={t.lightText} />
-        <Text style={[styles.addPhotoText, { color: t.lightText }]}>Add Photo</Text>
+        {photoUri ? (
+          <View style={styles.photoPreviewRow}>
+            <Image source={{ uri: photoUri }} style={styles.photoThumbnail} />
+            <Text style={[styles.addPhotoText, { color: t.darkText }]}>Photo added</Text>
+            <Ionicons name="checkmark-circle" size={20} color="#22C55E" />
+          </View>
+        ) : (
+          <>
+            <Ionicons name="camera-outline" size={24} color={t.lightText} />
+            <Text style={[styles.addPhotoText, { color: t.lightText }]}>Add Photo</Text>
+          </>
+        )}
       </TouchableOpacity>
 
       {/* Save */}
@@ -583,6 +612,16 @@ const styles = StyleSheet.create({
   addPhotoText: {
     ...typography.subhead,
     fontWeight: '500',
+  },
+  photoPreviewRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  photoThumbnail: {
+    width: 40,
+    height: 40,
+    borderRadius: borderRadius.sm,
   },
 
   // --- Save button ---

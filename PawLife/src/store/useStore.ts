@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { User, Dog, Activity, Reminder, VetAppointment, Injection, Milestone, Challenge, Quote } from '../types';
+import { User, Dog, Activity, Reminder, VetAppointment, Injection, Milestone, Challenge, Quote, ActivityType } from '../types';
 import * as firestoreService from '../services/firestore';
 
 interface AppState {
@@ -37,11 +37,13 @@ interface AppState {
   // UI
   themeMode: 'system' | 'light' | 'dark';
   unitSystem: 'metric' | 'imperial';
+  pendingLogType: ActivityType | null;
 
   // Actions
   setUser: (user: User | null) => void;
   setAuthenticated: (value: boolean) => void;
   setOnboardingComplete: (value: boolean) => void;
+  setPendingLogType: (type: ActivityType | null) => void;
   addDog: (dog: Dog) => void;
   updateDog: (id: string, dog: Partial<Dog>) => void;
   removeDog: (id: string) => void;
@@ -81,6 +83,7 @@ export const useStore = create<AppState>((set, get) => ({
   pushToken: null,
   themeMode: 'system',
   unitSystem: 'metric',
+  pendingLogType: null,
 
   setUser: (user) => set({ user }),
   setAuthenticated: (value) => set({ isAuthenticated: value }),
@@ -172,4 +175,5 @@ export const useStore = create<AppState>((set, get) => ({
   setPushToken: (token) => set({ pushToken: token }),
   setThemeMode: (mode) => set({ themeMode: mode }),
   setUnitSystem: (system) => set({ unitSystem: system }),
+  setPendingLogType: (type) => set({ pendingLogType: type }),
 }));

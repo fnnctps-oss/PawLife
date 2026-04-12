@@ -7,6 +7,7 @@ import {
   Animated,
   Easing,
   Dimensions,
+  Share,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -361,15 +362,19 @@ export const WeeklyPawReport: React.FC = () => {
 
   // ------ Handlers ------
 
-  const handleShare = () => {
-    Alert.alert(
-      'Share Report',
-      `Share ${dog.name}'s Weekly Paw Report for ${weekLabel}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Share', onPress: () => Alert.alert('Coming Soon', 'Sharing will be available in a future update.') },
-      ],
-    );
+  const handleShare = async () => {
+    const message = `${dog.name}'s Weekly Paw Report (${weekLabel})\n\n` +
+      `Walks: ${totalWalks} | Distance: ${totalDistanceKm.toFixed(1)} km | Walk Time: ${totalWalkHours.toFixed(1)} hrs\n` +
+      `Meals: ${totalMeals}/${mealTarget} | Water Logs: ${waterLogs}\n` +
+      `Health Score: ${healthScore}%\n` +
+      `Walk Streak: ${walkStreak} days\n\n` +
+      `Track your dog's best life at pawlife.app \uD83D\uDC3E`;
+
+    try {
+      await Share.share({ message });
+    } catch {
+      // user cancelled
+    }
   };
 
   // ------ Stat card helper ------

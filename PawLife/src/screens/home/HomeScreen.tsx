@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +14,7 @@ import { Card, Avatar, Badge, ScreenContainer } from '../../components';
 import { colors, spacing, typography, borderRadius, shadows, gradients, useTheme } from '../../theme';
 import { useStore } from '../../store/useStore';
 import { getGreeting, getAge, getActivityIcon, getActivityColor } from '../../utils/helpers';
+import { ActivityType } from '../../types';
 
 // ---------------------------------------------------------------------------
 // Mock data so the dashboard looks populated out of the box
@@ -166,9 +166,11 @@ export const HomeScreen: React.FC = () => {
     [],
   );
 
+  const setPendingLogType = useStore((s) => s.setPendingLogType);
+
   // ------ handlers ------
   const handleQuickAction = (key: string) => {
-    Alert.alert('Log Activity', `Logging "${key}" for ${currentDog?.name ?? 'your dog'}.`);
+    setPendingLogType(key as ActivityType);
   };
 
   const handleDogSwitch = (id: string) => {
@@ -194,7 +196,7 @@ export const HomeScreen: React.FC = () => {
           </Text>
           <Text style={styles.headerDashboard}>Your Dashboard</Text>
         </View>
-        <TouchableOpacity activeOpacity={0.8} onPress={() => Alert.alert('Profile', 'Navigate to profile.')}>
+        <TouchableOpacity activeOpacity={0.8} onPress={() => (navigation as any).navigate('MainTabs', { screen: 'Profile' })}>
           <Avatar uri={user.photoURL || undefined} name={user.displayName} size={44} />
         </TouchableOpacity>
       </View>
@@ -293,7 +295,12 @@ export const HomeScreen: React.FC = () => {
 
   const renderSchedule = () => (
     <View style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: t.darkText }]}>Today's Schedule</Text>
+      <View style={styles.sectionHeaderRow}>
+        <Text style={[styles.sectionTitle, { color: t.darkText, marginBottom: 0 }]}>Today's Schedule</Text>
+        <TouchableOpacity onPress={() => (navigation as any).navigate('Reminders')}>
+          <Text style={[styles.viewReportLink, { color: t.primary }]}>See all</Text>
+        </TouchableOpacity>
+      </View>
       {MOCK_SCHEDULE.length === 0 ? (
         <View style={[styles.emptyScheduleCard, { backgroundColor: t.card }]}>
           <Ionicons name="calendar-outline" size={32} color={t.placeholderText} />
@@ -410,28 +417,62 @@ export const HomeScreen: React.FC = () => {
 
   const renderMilestoneTeaser = () => (
     <View style={styles.section}>
-      <LinearGradient
-        colors={['#8B5CF6', '#6366F1']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.milestoneCard}
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={() => (navigation as any).navigate('MainTabs', { screen: 'Milestones' })}
       >
-        {/* Decorative blurred circle top-right */}
-        <View style={styles.milestoneDecorCircle} />
+        <LinearGradient
+          colors={['#8B5CF6', '#6366F1']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.milestoneCard}
+        >
+          {/* Decorative blurred circle top-right */}
+          <View style={styles.milestoneDecorCircle} />
 
-        <View style={styles.milestoneInner}>
-          {/* Frosted glass trophy container */}
-          <View style={styles.milestoneTrophyWrap}>
-            <Ionicons name="trophy" size={28} color={colors.white} />
+          <View style={styles.milestoneInner}>
+            {/* Frosted glass trophy container */}
+            <View style={styles.milestoneTrophyWrap}>
+              <Ionicons name="trophy" size={28} color={colors.white} />
+            </View>
+            <View style={styles.milestoneTextWrap}>
+              <Text style={styles.milestoneTitle}>Almost there!</Text>
+              <Text style={styles.milestoneBody}>
+                {currentDog?.name ?? 'Your pup'} is 3 walks away from her 100th walk!
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.7)" />
           </View>
-          <View style={styles.milestoneTextWrap}>
-            <Text style={styles.milestoneTitle}>Almost there!</Text>
-            <Text style={styles.milestoneBody}>
-              {currentDog?.name ?? 'Your pup'} is 3 walks away from her 100th walk!
-            </Text>
-          </View>
-        </View>
-      </LinearGradient>
+        </LinearGradient>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const QUICK_LINKS = [
+    { label: 'Reminders', icon: 'alarm-outline' as const, route: 'Reminders', accent: '#4A90D9' },
+    { label: 'Vet Appointments', icon: 'medkit-outline' as const, route: 'VetAppointments', accent: '#FF4D4D' },
+    { label: 'Vaccinations', icon: 'shield-checkmark-outline' as const, route: 'Vaccinations', accent: '#10B981' },
+  ];
+
+  const renderQuickLinks = () => (
+    <View style={styles.section}>
+      <Text style={[styles.sectionTitle, { color: t.darkText }]}>Quick Links</Text>
+      <View style={styles.quickLinksContainer}>
+        {QUICK_LINKS.map((link) => (
+          <TouchableOpacity
+            key={link.route}
+            activeOpacity={0.7}
+            onPress={() => (navigation as any).navigate(link.route)}
+            style={[styles.quickLinkRow, { backgroundColor: t.card, borderColor: t.border }]}
+          >
+            <View style={[styles.quickLinkIconWrap, { backgroundColor: link.accent + '1A' }]}>
+              <Ionicons name={link.icon as keyof typeof Ionicons.glyphMap} size={20} color={link.accent} />
+            </View>
+            <Text style={[styles.quickLinkLabel, { color: t.darkText }]}>{link.label}</Text>
+            <Ionicons name="chevron-forward" size={18} color={t.lightText} />
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
   );
 
@@ -451,6 +492,9 @@ export const HomeScreen: React.FC = () => {
 
         {/* Today's Schedule */}
         {renderSchedule()}
+
+        {/* Quick Links */}
+        {renderQuickLinks()}
 
         {/* Quick Actions */}
         {renderQuickActions()}
@@ -783,6 +827,32 @@ const styles = StyleSheet.create({
   chartBarLabelToday: {
     color: colors.primary,
     fontWeight: '600',
+  },
+
+  /* ---- Quick Links ---- */
+  quickLinksContainer: {
+    gap: spacing.sm,
+  },
+  quickLinkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.base,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  quickLinkIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.sm,
+  },
+  quickLinkLabel: {
+    ...typography.subhead,
+    fontWeight: '500',
+    flex: 1,
   },
 
   /* ---- Milestone Teaser (purple gradient) ---- */

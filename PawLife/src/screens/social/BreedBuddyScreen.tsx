@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../theme/useTheme';
 import { useStore } from '../../store/useStore';
@@ -63,6 +63,10 @@ export const BreedBuddyScreen: React.FC = () => {
   const buddies = getMockBuddies(breed);
   const meetups = getMockMeetups(breed);
   const tip = BREED_TIPS[breed] ?? DEFAULT_TIP;
+
+  const handleWave = (buddy: BuddyData) => {
+    Alert.alert('Wave sent!', `Wave sent to ${buddy.ownerName}! \uD83D\uDC3E`);
+  };
 
   return (
     <ScreenContainer>
@@ -134,6 +138,7 @@ export const BreedBuddyScreen: React.FC = () => {
             <TouchableOpacity
               style={[styles.waveButton, { backgroundColor: colors.primary }]}
               activeOpacity={0.8}
+              onPress={() => handleWave(buddy)}
             >
               <Text style={styles.waveButtonText}>{`Wave \u{1F44B}`}</Text>
             </TouchableOpacity>

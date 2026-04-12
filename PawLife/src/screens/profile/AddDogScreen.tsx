@@ -9,6 +9,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -16,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { generateId } from '../../utils/helpers';
 import { useStore } from '../../store/useStore';
 import { useTheme } from '../../theme';
+import { pickImageFromLibrary, takePhoto } from '../../utils/imagePicker';
 
 const COMMON_BREEDS = [
   'Labrador Retriever',
@@ -60,6 +62,7 @@ const AddDogScreen: React.FC = () => {
   const [allergyInput, setAllergyInput] = useState('');
   const [showBreedSuggestions, setShowBreedSuggestions] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
 
   const filteredBreeds = useMemo(() => {
     if (!breed.trim()) return [];
@@ -69,17 +72,27 @@ const AddDogScreen: React.FC = () => {
     ).slice(0, 5);
   }, [breed]);
 
+  const handleTakePhoto = useCallback(async () => {
+    const uri = await takePhoto();
+    if (uri) setPhotoUri(uri);
+  }, []);
+
+  const handlePickFromLibrary = useCallback(async () => {
+    const uri = await pickImageFromLibrary();
+    if (uri) setPhotoUri(uri);
+  }, []);
+
   const handleAvatarPress = useCallback(() => {
     Alert.alert(
       'Add Photo',
       'Choose a photo for your dog',
       [
-        { text: 'Take Photo', onPress: () => {} },
-        { text: 'Choose from Library', onPress: () => {} },
+        { text: 'Take Photo', onPress: handleTakePhoto },
+        { text: 'Choose from Library', onPress: handlePickFromLibrary },
         { text: 'Cancel', style: 'cancel' },
       ]
     );
-  }, []);
+  }, [handleTakePhoto, handlePickFromLibrary]);
 
   const handleAddAllergy = useCallback(() => {
     const trimmed = allergyInput.trim();
@@ -112,7 +125,7 @@ const AddDogScreen: React.FC = () => {
       id: generateId(),
       name: name.trim(),
       breed: breed.trim(),
-      photo: '',
+      photo: photoUri || '',
       dateOfBirth: dateOfBirth.trim(),
       weight: weight ? parseFloat(weight) : 0,
       gender: (gender || 'male') as 'male' | 'female',
@@ -123,7 +136,7 @@ const AddDogScreen: React.FC = () => {
 
     addDog(dog);
     navigation.goBack();
-  }, [name, breed, dateOfBirth, weight, gender, allergies, addDog, navigation]);
+  }, [name, breed, dateOfBirth, weight, gender, allergies, addDog, navigation, photoUri]);
 
   const displayName = name.trim() || 'Dog';
 
@@ -169,7 +182,11 @@ const AddDogScreen: React.FC = () => {
         <View style={styles.avatarSection}>
           <TouchableOpacity onPress={handleAvatarPress} activeOpacity={0.8}>
             <View style={[styles.avatarContainer, isDark && { backgroundColor: t.surface }]}>
-              <Ionicons name="camera" size={40} color="#CBD5E1" />
+              {photoUri ? (
+                <Image source={{ uri: photoUri }} style={styles.avatarImage} />
+              ) : (
+                <Ionicons name="camera" size={40} color="#CBD5E1" />
+              )}
             </View>
           </TouchableOpacity>
         </View>
@@ -446,6 +463,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12,
     shadowRadius: 16,
     elevation: 8,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: 128,
+    height: 128,
+    borderRadius: 64,
   },
 
   // Form

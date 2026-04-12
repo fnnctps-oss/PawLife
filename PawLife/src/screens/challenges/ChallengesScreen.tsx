@@ -7,6 +7,7 @@ import {
   Modal,
   Alert,
   FlatList,
+  Share,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -27,7 +28,7 @@ interface ChallengeData {
   status: 'active' | 'upcoming' | 'completed';
 }
 
-const CHALLENGES: ChallengeData[] = [
+const INITIAL_CHALLENGES: ChallengeData[] = [
   {
     id: '1',
     title: 'Walk-tober',
@@ -94,8 +95,33 @@ export const ChallengesScreen: React.FC = () => {
   const { colors: t } = useTheme();
   const [filter, setFilter] = useState<'active' | 'upcoming' | 'completed'>('active');
   const [detailChallenge, setDetailChallenge] = useState<ChallengeData | null>(null);
+  const [challenges, setChallenges] = useState<ChallengeData[]>(INITIAL_CHALLENGES);
 
-  const filtered = CHALLENGES.filter((c) => c.status === filter);
+  const filtered = challenges.filter((c) => c.status === filter);
+
+  const handleJoinChallenge = (challengeId: string) => {
+    setChallenges((prev) =>
+      prev.map((c) =>
+        c.id === challengeId
+          ? { ...c, joined: !c.joined, participants: c.joined ? c.participants - 1 : c.participants + 1 }
+          : c
+      )
+    );
+    const challenge = challenges.find((c) => c.id === challengeId);
+    if (challenge && !challenge.joined) {
+      Alert.alert('Joined!', `You have joined the "${challenge.title}" challenge.`);
+    }
+  };
+
+  const handleShareProgress = async (challenge: ChallengeData) => {
+    const pct = Math.round((challenge.progress / challenge.goal) * 100);
+    const message = `I'm ${pct}% through the "${challenge.title}" challenge on PawLife! (${challenge.progress}/${challenge.goal})\n\nJoin me and track your dog's best life at pawlife.app \uD83D\uDC3E`;
+    try {
+      await Share.share({ message });
+    } catch {
+      // user cancelled
+    }
+  };
 
   const renderChallenge = ({ item }: { item: ChallengeData }) => {
     const pct = Math.round((item.progress / item.goal) * 100);
@@ -140,7 +166,7 @@ export const ChallengesScreen: React.FC = () => {
               ) : (
                 <Button
                   title="Join Challenge"
-                  onPress={() => Alert.alert('Joined!', 'You have joined this challenge.')}
+                  onPress={() => handleJoinChallenge(item.id)}
                   size="sm"
                   variant="outline"
                   fullWidth={false}
@@ -246,7 +272,7 @@ export const ChallengesScreen: React.FC = () => {
 
                 <Button
                   title="Share Progress"
-                  onPress={() => Alert.alert('Share', 'Share sheet would open!')}
+                  onPress={() => handleShareProgress(detailChallenge)}
                   style={{ marginTop: spacing.xl }}
                 />
               </>

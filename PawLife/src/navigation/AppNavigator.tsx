@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -38,11 +38,21 @@ function MainTabs() {
   const { colors: themeColors, isDark } = useTheme();
   const [showLogSheet, setShowLogSheet] = useState(false);
   const [activityType, setActivityType] = useState<ActivityType>('walk');
+  const pendingLogType = useStore((s) => s.pendingLogType);
+  const setPendingLogType = useStore((s) => s.setPendingLogType);
 
   const openLog = (type: ActivityType) => {
     setActivityType(type);
     setShowLogSheet(true);
   };
+
+  // React to pendingLogType set from other screens (e.g. HomeScreen quick actions)
+  useEffect(() => {
+    if (pendingLogType) {
+      openLog(pendingLogType);
+      setPendingLogType(null);
+    }
+  }, [pendingLogType]);
 
   return (
     <>

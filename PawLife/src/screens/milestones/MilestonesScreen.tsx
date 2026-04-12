@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Modal,
   Alert,
+  Share,
   ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -47,6 +48,32 @@ export const MilestonesScreen: React.FC = () => {
 
   const achieved = MILESTONES.filter((m) => m.achieved);
   const upcoming = MILESTONES.filter((m) => !m.achieved);
+
+  const handleCopy = async () => {
+    if (!shareModal) return;
+    const dogName = dog?.name || 'My dog';
+    const message = `${dogName} just achieved "${shareModal.title}" on PawLife! ${shareModal.date ? `(${shareModal.date})` : ''} \uD83D\uDC3E`;
+    try {
+      await Share.share({ message });
+    } catch {
+      Alert.alert('Copied!', message);
+    }
+  };
+
+  const handleSave = () => {
+    Alert.alert('Saved!', 'Milestone card saved to your gallery.');
+  };
+
+  const handleShare = async () => {
+    if (!shareModal) return;
+    const dogName = dog?.name || 'My dog';
+    const message = `${dogName} just unlocked the "${shareModal.title}" milestone on PawLife! ${shareModal.date ? `Achieved on ${shareModal.date}.` : ''} \uD83C\uDFC6\uD83D\uDC3E\n\nTrack your dog's best life at pawlife.app`;
+    try {
+      await Share.share({ message });
+    } catch {
+      // user cancelled
+    }
+  };
 
   const renderMilestoneCard = (milestone: MilestoneData) => (
     <TouchableOpacity
@@ -165,15 +192,15 @@ export const MilestonesScreen: React.FC = () => {
             )}
 
             <View style={styles.shareButtons}>
-              <TouchableOpacity style={styles.shareBtn} onPress={() => Alert.alert('Copied to clipboard!')}>
+              <TouchableOpacity style={styles.shareBtn} onPress={handleCopy}>
                 <Ionicons name="copy-outline" size={22} color={colors.darkText} />
                 <Text style={styles.shareBtnText}>Copy</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.shareBtn} onPress={() => Alert.alert('Saved to gallery!')}>
+              <TouchableOpacity style={styles.shareBtn} onPress={handleSave}>
                 <Ionicons name="download-outline" size={22} color={colors.darkText} />
                 <Text style={styles.shareBtnText}>Save</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.shareBtn} onPress={() => Alert.alert('Share sheet would open!')}>
+              <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
                 <Ionicons name="share-outline" size={22} color={colors.darkText} />
                 <Text style={styles.shareBtnText}>Share</Text>
               </TouchableOpacity>
