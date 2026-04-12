@@ -31,6 +31,9 @@ interface AppState {
   // Quotes
   quotes: Quote[];
 
+  // Notifications
+  pushToken: string | null;
+
   // UI
   themeMode: 'system' | 'light' | 'dark';
   unitSystem: 'metric' | 'imperial';
@@ -52,6 +55,7 @@ interface AppState {
   addMilestone: (milestone: Milestone) => void;
   addChallenge: (challenge: Challenge) => void;
   setQuotes: (quotes: Quote[]) => void;
+  setPushToken: (token: string | null) => void;
   setThemeMode: (mode: 'system' | 'light' | 'dark') => void;
   setUnitSystem: (system: 'metric' | 'imperial') => void;
 }
@@ -74,6 +78,7 @@ export const useStore = create<AppState>((set, get) => ({
   milestones: [],
   challenges: [],
   quotes: [],
+  pushToken: null,
   themeMode: 'system',
   unitSystem: 'metric',
 
@@ -164,6 +169,7 @@ export const useStore = create<AppState>((set, get) => ({
 
   addChallenge: (challenge) => set((state) => ({ challenges: [...state.challenges, challenge] })),
   setQuotes: (quotes) => set({ quotes }),
+  setPushToken: (token) => set({ pushToken: token }),
   setThemeMode: (mode) => set({ themeMode: mode }),
   setUnitSystem: (system) => set({ unitSystem: system }),
 }));

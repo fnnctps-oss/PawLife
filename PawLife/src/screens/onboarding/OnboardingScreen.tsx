@@ -14,6 +14,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { colors, spacing, borderRadius, typography, useTheme } from '../../theme';
 import { Button } from '../../components/Button';
 
@@ -37,49 +38,46 @@ const PAGES: OnboardingPage[] = [
     id: 'welcome',
     icon: 'paw',
     iconGradient: [colors.primary, colors.primaryDark],
-    title: 'Welcome to PawLife',
-    subtitle: 'Every wag, walk, and woof — beautifully tracked.',
+    title: 'onboarding.welcome',
+    subtitle: 'onboarding.tagline',
   },
   {
     id: 'track',
     icon: 'clipboard',
     iconGradient: [colors.secondary, colors.secondaryDark],
-    title: 'Track Every Moment',
-    subtitle:
-      'Walks, meals, water, vet visits, injections — all in one place.',
+    title: 'onboarding.trackTitle',
+    subtitle: 'onboarding.trackSubtitle',
   },
   {
     id: 'reminders',
     icon: 'notifications',
     iconGradient: [colors.accent, colors.accentDark],
-    title: 'Never Miss a Thing',
-    subtitle:
-      'Smart reminders with heartwarming quotes that make caring for your dog a joy.',
+    title: 'onboarding.remindersTitle',
+    subtitle: 'onboarding.remindersSubtitle',
   },
   {
     id: 'share',
     icon: 'share-social',
     iconGradient: ['#FF8C42', '#FF4D4D'],
-    title: 'Celebrate & Share',
-    subtitle:
-      "Beautiful milestone cards and weekly reports you'll actually want to share.",
+    title: 'onboarding.shareTitle',
+    subtitle: 'onboarding.shareSubtitle',
   },
   {
     id: 'trial',
     icon: 'star',
     iconGradient: ['#FFB07A', '#FF8C42'],
-    title: 'Start Your Free\n10-Day Trial',
+    title: 'onboarding.trialTitle',
     subtitle: '',
     isFinal: true,
   },
 ];
 
-const TRIAL_FEATURES = [
-  'Unlimited activity tracking',
-  'Smart reminders & notifications',
-  'Beautiful milestone cards',
-  'Weekly health reports',
-  'Multi-dog support',
+const TRIAL_FEATURE_KEYS = [
+  'onboarding.trialFeature1',
+  'onboarding.trialFeature2',
+  'onboarding.trialFeature3',
+  'onboarding.trialFeature4',
+  'onboarding.trialFeature5',
 ];
 
 const DOT_SIZE = 8;
@@ -88,6 +86,7 @@ const DOT_SPACING = 8;
 export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   onComplete,
 }) => {
+  const { t: tr } = useTranslation();
   const { colors: t } = useTheme();
   const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList>(null);
@@ -147,12 +146,12 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     );
   };
 
-  const renderTrialFeature = (feature: string, index: number) => (
+  const renderTrialFeature = (featureKey: string, index: number) => (
     <View key={index} style={styles.featureRow}>
       <View style={styles.checkCircle}>
         <Ionicons name="checkmark" size={16} color={colors.white} />
       </View>
-      <Text style={[styles.featureText, { color: t.darkText }]}>{feature}</Text>
+      <Text style={[styles.featureText, { color: t.darkText }]}>{tr(featureKey)}</Text>
     </View>
   );
 
@@ -185,14 +184,14 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
         >
           {renderIcon(item)}
 
-          <Text style={[styles.title, { color: t.darkText }]}>{item.title}</Text>
+          <Text style={[styles.title, { color: t.darkText }]}>{tr(item.title)}</Text>
 
           {item.isFinal ? (
             <View style={styles.featuresContainer}>
-              {TRIAL_FEATURES.map(renderTrialFeature)}
+              {TRIAL_FEATURE_KEYS.map(renderTrialFeature)}
             </View>
           ) : (
-            <Text style={[styles.subtitle, { color: t.bodyText }]}>{item.subtitle}</Text>
+            <Text style={[styles.subtitle, { color: t.bodyText }]}>{tr(item.subtitle)}</Text>
           )}
         </Animated.View>
       </View>
@@ -254,7 +253,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
           onPress={handleSkip}
           activeOpacity={0.7}
         >
-          <Text style={styles.skipText}>Skip</Text>
+          <Text style={styles.skipText}>{tr('common.skip')}</Text>
         </TouchableOpacity>
       )}
 
@@ -290,7 +289,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
           {isLastPage ? (
             <>
               <Button
-                title="Start Free Trial"
+                title={tr('onboarding.startTrial')}
                 onPress={onComplete}
                 variant="primary"
                 size="lg"
@@ -300,12 +299,12 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                 onPress={onComplete}
                 activeOpacity={0.7}
               >
-                <Text style={styles.freeLinkText}>Continue with Free Plan</Text>
+                <Text style={styles.freeLinkText}>{tr('onboarding.freePlan')}</Text>
               </TouchableOpacity>
             </>
           ) : (
             <Button
-              title="Next"
+              title={tr('common.next')}
               onPress={handleNext}
               variant="primary"
               size="lg"

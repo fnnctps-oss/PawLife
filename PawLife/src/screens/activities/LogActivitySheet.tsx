@@ -13,6 +13,7 @@ import { colors, spacing, typography, borderRadius, shadows, useTheme } from '..
 import { useStore } from '../../store/useStore';
 import { generateId } from '../../utils/helpers';
 import { ActivityType } from '../../types';
+import { useWalkTracker } from '../../hooks/useWalkTracker';
 
 interface LogActivitySheetProps {
   activityType: ActivityType;
@@ -57,6 +58,9 @@ export const LogActivitySheet: React.FC<LogActivitySheetProps> = ({
   const [saved, setSaved] = useState(false);
   const [duration, setDuration] = useState('');
   const [amount, setAmount] = useState<'small' | 'medium' | 'large'>('medium');
+  const [walkDistance, setWalkDistance] = useState(0);
+
+  const walkTracker = useWalkTracker();
 
   const currentType = selectedType;
 
@@ -200,9 +204,128 @@ export const LogActivitySheet: React.FC<LogActivitySheetProps> = ({
     </View>
   );
 
+  const formatTime = (totalSeconds: number): string => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleStartWalk = async () => {
+    try {
+      await walkTracker.startWalk();
+    } catch {
+      Alert.alert('Permission Denied', 'Location permission is required to track walks.');
+    }
+  };
+
+  const handlePauseResumeWalk = async () => {
+    if (walkTracker.isPaused) {
+      await walkTracker.resumeWalk();
+    } else {
+      await walkTracker.pauseWalk();
+    }
+  };
+
+  const handleStopWalk = async () => {
+    const result = await walkTracker.stopWalk();
+    const durationMinutes = Math.ceil(result.duration / 60);
+    setDuration(durationMinutes.toString());
+    setWalkDistance(result.distance);
+  };
+
+  const renderWalkTracker = () => (
+    <View style={styles.walkTrackerContainer}>
+      {/* Circular timer display */}
+      <View style={[styles.timerCircle, { borderColor: accentColor + '40' }]}>
+        <Text style={[styles.timerText, { color: t.darkText }]}>
+          {walkTracker.isTracking
+            ? formatTime(walkTracker.duration)
+            : duration
+              ? formatTime(parseInt(duration, 10) * 60)
+              : '00:00'}
+        </Text>
+        <Text style={[styles.timerLabel, { color: t.lightText }]}>
+          {walkTracker.isTracking
+            ? walkTracker.isPaused
+              ? 'Paused'
+              : 'Walking'
+            : duration
+              ? 'Completed'
+              : 'Ready'}
+        </Text>
+      </View>
+
+      {/* Distance display */}
+      <Text style={[styles.distanceText, { color: t.darkText }]}>
+        {walkTracker.isTracking
+          ? (walkTracker.distance / 1000).toFixed(2)
+          : (walkDistance / 1000).toFixed(2)}{' '}
+        km
+      </Text>
+
+      {/* Control buttons */}
+      <View style={styles.walkButtonRow}>
+        {!walkTracker.isTracking && !duration ? (
+          <TouchableOpacity
+            style={[styles.walkButton, { backgroundColor: '#22C55E' }]}
+            onPress={handleStartWalk}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="play" size={22} color="#FFFFFF" />
+            <Text style={styles.walkButtonText}>Start</Text>
+          </TouchableOpacity>
+        ) : walkTracker.isTracking ? (
+          <>
+            <TouchableOpacity
+              style={[styles.walkButton, { backgroundColor: '#F59E0B' }]}
+              onPress={handlePauseResumeWalk}
+              activeOpacity={0.8}
+            >
+              <Ionicons
+                name={walkTracker.isPaused ? 'play' : 'pause'}
+                size={22}
+                color="#FFFFFF"
+              />
+              <Text style={styles.walkButtonText}>
+                {walkTracker.isPaused ? 'Resume' : 'Pause'}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.walkButton, { backgroundColor: '#EF4444' }]}
+              onPress={handleStopWalk}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="stop" size={22} color="#FFFFFF" />
+              <Text style={styles.walkButtonText}>Stop</Text>
+            </TouchableOpacity>
+          </>
+        ) : null}
+      </View>
+
+      {/* Show duration field if walk was completed for manual adjustment */}
+      {!walkTracker.isTracking && duration ? (
+        <View style={[styles.fieldGroup, { marginTop: spacing.base }]}>
+          <Text style={[styles.fieldLabel, { color: t.darkText }]}>Duration (minutes)</Text>
+          <View style={[styles.inputRow, { backgroundColor: t.surface, borderColor: t.border }]}>
+            <Ionicons name="time-outline" size={20} color={t.lightText} style={styles.inputIcon} />
+            <TextInput
+              style={[styles.textInput, { color: t.darkText }]}
+              placeholder="30"
+              placeholderTextColor={t.placeholderText}
+              value={duration}
+              onChangeText={setDuration}
+              keyboardType="number-pad"
+            />
+          </View>
+        </View>
+      ) : null}
+    </View>
+  );
+
   const renderFormFields = () => {
     switch (currentType) {
       case 'walk':
+        return renderWalkTracker();
       case 'play':
         return renderDurationInput();
       case 'food':
@@ -341,6 +464,55 @@ const styles = StyleSheet.create({
   gridLabel: {
     ...typography.subhead,
     fontWeight: '700',
+  },
+
+  // --- Walk tracker ---
+  walkTrackerContainer: {
+    alignItems: 'center',
+    marginBottom: spacing.base,
+  },
+  timerCircle: {
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    borderWidth: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
+  timerText: {
+    fontSize: 36,
+    fontWeight: '700',
+    fontVariant: ['tabular-nums'],
+  },
+  timerLabel: {
+    ...typography.subhead,
+    marginTop: 4,
+  },
+  distanceText: {
+    ...typography.title3,
+    fontWeight: '600',
+    marginBottom: spacing.lg,
+  },
+  walkButtonRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  walkButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    borderRadius: borderRadius.xl,
+    minWidth: 120,
+  },
+  walkButtonText: {
+    ...typography.headline,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 
   // --- Form fields ---

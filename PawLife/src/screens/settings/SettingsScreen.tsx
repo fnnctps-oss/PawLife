@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { colors, spacing, typography, borderRadius, shadows, useTheme } from '../../theme';
 import type { ThemeMode } from '../../theme';
 import { ScreenContainer, Avatar, Card } from '../../components';
@@ -52,13 +53,14 @@ const SettingsRow: React.FC<SettingsRowProps> = ({
   </TouchableOpacity>
 );
 
-const THEME_OPTIONS: { key: ThemeMode; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { key: 'system', label: 'System', icon: 'phone-portrait-outline' },
-  { key: 'light', label: 'Light', icon: 'sunny-outline' },
-  { key: 'dark', label: 'Dark', icon: 'moon-outline' },
+const THEME_OPTIONS: { key: ThemeMode; labelKey: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { key: 'system', labelKey: 'settings.system', icon: 'phone-portrait-outline' },
+  { key: 'light', labelKey: 'settings.light', icon: 'sunny-outline' },
+  { key: 'dark', labelKey: 'settings.dark', icon: 'moon-outline' },
 ];
 
 export const SettingsScreen: React.FC = () => {
+  const { t: tr } = useTranslation();
   const navigation = useNavigation<any>();
   const { user, dogs, themeMode, unitSystem, setThemeMode, setUnitSystem, setAuthenticated, setUser } = useStore();
   const { colors: t, isDark } = useTheme();
@@ -106,12 +108,12 @@ export const SettingsScreen: React.FC = () => {
         <Text style={styles.userName}>{user?.displayName || 'Dog Lover'}</Text>
         <Text style={styles.userEmail}>{user?.email || 'user@example.com'}</Text>
         <TouchableOpacity style={styles.editProfileBtn}>
-          <Text style={styles.editProfileText}>Edit Profile</Text>
+          <Text style={styles.editProfileText}>{tr('settings.editProfile')}</Text>
         </TouchableOpacity>
       </View>
 
       {/* My Dogs */}
-      <Text style={styles.sectionHeader}>MY DOGS</Text>
+      <Text style={styles.sectionHeader}>{tr('settings.myDogs')}</Text>
       <Card style={styles.section}>
         {dogs.length > 0 ? (
           dogs.map((dog, idx) => (
@@ -131,43 +133,43 @@ export const SettingsScreen: React.FC = () => {
         <SettingsRow
           icon="add-circle"
           iconColor={colors.accent}
-          label="Add Dog"
+          label={tr('dog.addDog')}
           onPress={() => navigation.navigate('AddDog')}
         />
       </Card>
 
       {/* Subscription */}
-      <Text style={styles.sectionHeader}>SUBSCRIPTION</Text>
+      <Text style={styles.sectionHeader}>{tr('settings.subscription')}</Text>
       <Card style={styles.section}>
         <SettingsRow
           icon="diamond"
           iconColor={colors.primary}
-          label="Current Plan"
+          label={tr('settings.currentPlan')}
           value={user?.subscription?.plan === 'premium' ? 'Premium' : 'Free'}
         />
         <View style={styles.divider} />
         <SettingsRow
           icon="arrow-up-circle"
           iconColor={colors.secondary}
-          label="Upgrade to Premium"
+          label={tr('settings.upgradePremium')}
           onPress={() => navigation.navigate('Paywall')}
         />
         <View style={styles.divider} />
         <SettingsRow
           icon="refresh-circle"
           iconColor={colors.lightText}
-          label="Restore Purchases"
+          label={tr('settings.restorePurchases')}
           onPress={() => Alert.alert('Restored', 'No previous purchases found.')}
         />
       </Card>
 
       {/* Preferences */}
-      <Text style={styles.sectionHeader}>PREFERENCES</Text>
+      <Text style={styles.sectionHeader}>{tr('settings.preferences')}</Text>
       <Card style={styles.section}>
         <SettingsRow
           icon="notifications"
           iconColor="#FF9500"
-          label="Notifications"
+          label={tr('settings.notifications')}
           rightElement={<Switch value={true} trackColor={{ false: colors.border, true: colors.primaryLight }} thumbColor={colors.primary} />}
         />
         <View style={styles.divider} />
@@ -175,7 +177,7 @@ export const SettingsScreen: React.FC = () => {
           <View style={[styles.rowIcon, { backgroundColor: '#5856D6' + '15' }]}>
             <Ionicons name="moon" size={18} color="#5856D6" />
           </View>
-          <Text style={[styles.rowLabel, { color: t.darkText }]}>Appearance</Text>
+          <Text style={[styles.rowLabel, { color: t.darkText }]}>{tr('settings.appearance')}</Text>
         </View>
         <View style={styles.themeSelector}>
           {THEME_OPTIONS.map((opt) => (
@@ -200,7 +202,7 @@ export const SettingsScreen: React.FC = () => {
                   themeMode === opt.key && { color: t.primary, fontWeight: '600' },
                 ]}
               >
-                {opt.label}
+                {tr(opt.labelKey)}
               </Text>
             </TouchableOpacity>
           ))}
@@ -209,7 +211,7 @@ export const SettingsScreen: React.FC = () => {
         <SettingsRow
           icon="scale"
           iconColor={colors.accent}
-          label="Weight Units"
+          label={tr('settings.weightUnits')}
           value={unitSystem === 'metric' ? 'kg' : 'lbs'}
           onPress={() => setUnitSystem(unitSystem === 'metric' ? 'imperial' : 'metric')}
         />
@@ -217,82 +219,82 @@ export const SettingsScreen: React.FC = () => {
         <SettingsRow
           icon="speedometer"
           iconColor={colors.secondary}
-          label="Distance Units"
+          label={tr('settings.distanceUnits')}
           value={unitSystem === 'metric' ? 'km' : 'mi'}
           onPress={() => setUnitSystem(unitSystem === 'metric' ? 'imperial' : 'metric')}
         />
       </Card>
 
       {/* Health & Data */}
-      <Text style={styles.sectionHeader}>HEALTH & DATA</Text>
+      <Text style={styles.sectionHeader}>{tr('settings.healthData')}</Text>
       <Card style={styles.section}>
         <SettingsRow
           icon="download"
           iconColor="#34C759"
-          label="Export Data"
+          label={tr('settings.exportData')}
           onPress={() => Alert.alert('Export', 'Data export would start.')}
         />
         <View style={styles.divider} />
         <SettingsRow
           icon="document-text"
           iconColor="#007AFF"
-          label="Health Passport"
+          label={tr('settings.healthPassport')}
           onPress={() => navigation.navigate('HealthPassport')}
         />
         <View style={styles.divider} />
         <SettingsRow
           icon="people"
           iconColor="#AF52DE"
-          label="Breed Buddy"
+          label={tr('settings.breedBuddy')}
           onPress={() => navigation.navigate('BreedBuddy')}
         />
         <View style={styles.divider} />
         <SettingsRow
           icon="bar-chart"
           iconColor="#FF9500"
-          label="Weekly Report"
+          label={tr('settings.weeklyReport')}
           onPress={() => navigation.navigate('WeeklyPawReport')}
         />
       </Card>
 
       {/* Support */}
-      <Text style={styles.sectionHeader}>SUPPORT</Text>
+      <Text style={styles.sectionHeader}>{tr('settings.support')}</Text>
       <Card style={styles.section}>
         <SettingsRow
           icon="help-circle"
           iconColor="#FF9500"
-          label="Help & FAQ"
+          label={tr('settings.helpFaq')}
           onPress={() => Alert.alert('Help', 'FAQ page would open.')}
         />
         <View style={styles.divider} />
         <SettingsRow
           icon="mail"
           iconColor="#4A90D9"
-          label="Contact Us"
+          label={tr('settings.contactUs')}
           onPress={() => Alert.alert('Contact', 'Email compose would open.')}
         />
         <View style={styles.divider} />
         <SettingsRow
           icon="star"
           iconColor="#FFD60A"
-          label="Rate the App"
+          label={tr('settings.rateApp')}
           onPress={() => Alert.alert('Thanks!', 'App Store rating would open.')}
         />
       </Card>
 
       {/* Danger Zone */}
-      <Text style={styles.sectionHeader}>ACCOUNT</Text>
+      <Text style={styles.sectionHeader}>{tr('settings.account')}</Text>
       <Card style={styles.section}>
         <SettingsRow
           icon="log-out"
-          label="Sign Out"
+          label={tr('settings.signOut')}
           danger
           onPress={handleSignOut}
         />
         <View style={styles.divider} />
         <SettingsRow
           icon="trash"
-          label="Delete Account"
+          label={tr('settings.deleteAccount')}
           danger
           onPress={handleDeleteAccount}
         />

@@ -9,12 +9,14 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { Button, Input, ScreenContainer } from '../../components';
 import { colors, spacing, typography, borderRadius, useTheme } from '../../theme';
 import { useStore } from '../../store/useStore';
 import { signInWithEmail } from '../../services/auth';
 
 export const SignInScreen: React.FC = () => {
+  const { t: tr } = useTranslation();
   const { colors: t } = useTheme();
   const navigation = useNavigation<any>();
   const { setAuthenticated, setUser } = useStore();
@@ -80,14 +82,14 @@ export const SignInScreen: React.FC = () => {
             <Ionicons name="paw" size={48} color={colors.primary} />
           </View>
           <Text style={[styles.appName, { color: t.darkText }]}>PawLife</Text>
-          <Text style={[styles.tagline, { color: t.lightText }]}>Your dog's best companion</Text>
+          <Text style={[styles.tagline, { color: t.lightText }]}>{tr('auth.tagline')}</Text>
         </View>
 
         {/* Form */}
         <View style={styles.form}>
           <Input
             icon="mail-outline"
-            placeholder="Email address"
+            placeholder={tr('auth.emailAddress')}
             value={email}
             onChangeText={(text) => {
               setEmail(text);
@@ -101,7 +103,7 @@ export const SignInScreen: React.FC = () => {
 
           <Input
             icon="lock-closed-outline"
-            placeholder="Password"
+            placeholder={tr('auth.password')}
             value={password}
             onChangeText={(text) => {
               setPassword(text);
@@ -118,11 +120,11 @@ export const SignInScreen: React.FC = () => {
             style={styles.forgotPassword}
             onPress={() => navigation.navigate('ForgotPassword')}
           >
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            <Text style={styles.forgotPasswordText}>{tr('auth.forgotPassword')}</Text>
           </TouchableOpacity>
 
           <Button
-            title="Sign In"
+            title={tr('auth.signIn')}
             onPress={handleSignIn}
             loading={loading}
             size="lg"
@@ -132,7 +134,7 @@ export const SignInScreen: React.FC = () => {
         {/* Divider */}
         <View style={styles.dividerContainer}>
           <View style={[styles.dividerLine, { backgroundColor: t.border }]} />
-          <Text style={[styles.dividerText, { color: t.lightText }]}>or continue with</Text>
+          <Text style={[styles.dividerText, { color: t.lightText }]}>{tr('auth.orContinueWith')}</Text>
           <View style={[styles.dividerLine, { backgroundColor: t.border }]} />
         </View>
 
@@ -159,9 +161,9 @@ export const SignInScreen: React.FC = () => {
 
         {/* Sign Up Link */}
         <View style={styles.bottomLink}>
-          <Text style={[styles.bottomLinkText, { color: t.lightText }]}>Don't have an account? </Text>
+          <Text style={[styles.bottomLinkText, { color: t.lightText }]}>{tr('auth.noAccount')} </Text>
           <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-            <Text style={styles.bottomLinkAction}>Sign Up</Text>
+            <Text style={styles.bottomLinkAction}>{tr('auth.signUp')}</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

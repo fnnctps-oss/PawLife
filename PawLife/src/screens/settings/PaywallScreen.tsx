@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,12 +6,21 @@ import {
   TouchableOpacity,
   Alert,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
+import { PurchasesPackage } from 'react-native-purchases';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { colors, spacing, typography, borderRadius, shadows, gradients, useTheme } from '../../theme';
+import { colors, spacing, typography, borderRadius, shadows, useTheme } from '../../theme';
 import { Button } from '../../components';
+import {
+  getOfferings,
+  purchasePackage,
+  restorePurchases,
+  checkSubscriptionStatus,
+} from '../../services/subscriptions';
+import { useStore } from '../../store/useStore';
 
 const FEATURES = [
   { label: 'Unlimited dog profiles', badge: null },
@@ -34,18 +43,124 @@ const PLANS: { key: PlanKey; label: string; price: string; detail: string; badge
   { key: 'lifetime', label: 'Lifetime', price: '$79.99', detail: 'one-time', badge: 'Best Value' },
 ];
 
+/**
+ * Map a PlanKey to matching RevenueCat package identifiers.
+ * RevenueCat uses identifiers like "$rc_monthly", "$rc_annual", "$rc_lifetime".
+ */
+function findPackageForPlan(
+  packages: PurchasesPackage[],
+  plan: PlanKey,
+): PurchasesPackage | undefined {
+  const identifierMap: Record<PlanKey, string[]> = {
+    monthly: ['$rc_monthly', 'monthly'],
+    yearly: ['$rc_annual', 'yearly', 'annual'],
+    lifetime: ['$rc_lifetime', 'lifetime'],
+  };
+  const candidates = identifierMap[plan];
+  return packages.find((pkg) =>
+    candidates.some(
+      (id) => pkg.identifier.toLowerCase() === id.toLowerCase(),
+    ),
+  );
+}
+
 export const PaywallScreen: React.FC = () => {
   const { colors: t } = useTheme();
   const navigation = useNavigation();
-  const [selectedPlan, setSelectedPlan] = useState<PlanKey>('yearly');
+  const user = useStore((s) => s.user);
+  const setUser = useStore((s) => s.setUser);
 
-  const handleSubscribe = () => {
-    Alert.alert(
-      'Trial Started!',
-      'Your 10-day free trial has been activated. Enjoy all premium features!',
-      [{ text: 'Awesome!', onPress: () => navigation.goBack() }]
-    );
-  };
+  const [selectedPlan, setSelectedPlan] = useState<PlanKey>('yearly');
+  const [packages, setPackages] = useState<PurchasesPackage[]>([]);
+  const [loadingOfferings, setLoadingOfferings] = useState(true);
+  const [purchasing, setPurchasing] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+
+  // Fetch offerings on mount
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const pkgs = await getOfferings();
+      if (mounted) {
+        setPackages(pkgs);
+        setLoadingOfferings(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const handlePurchaseSuccess = useCallback(
+    async () => {
+      const status = await checkSubscriptionStatus();
+      if (user) {
+        setUser({ ...user, isPremium: status.isPremium } as typeof user);
+      }
+      Alert.alert(
+        'Welcome to Premium!',
+        status.plan === 'lifetime'
+          ? 'You now have lifetime access to all PawLife Premium features.'
+          : 'Your subscription is active. Enjoy all premium features!',
+        [{ text: 'Awesome!', onPress: () => navigation.goBack() }],
+      );
+    },
+    [user, setUser, navigation],
+  );
+
+  const handleSubscribe = useCallback(async () => {
+    // If we have RevenueCat packages, use them
+    if (packages.length > 0) {
+      const pkg = findPackageForPlan(packages, selectedPlan);
+      if (!pkg) {
+        Alert.alert('Error', 'Selected plan is not available. Please try another plan.');
+        return;
+      }
+      setPurchasing(true);
+      try {
+        await purchasePackage(pkg);
+        await handlePurchaseSuccess();
+      } catch (error: any) {
+        if (!error.userCancelled) {
+          Alert.alert('Purchase Failed', 'Something went wrong. Please try again.');
+        }
+      } finally {
+        setPurchasing(false);
+      }
+    } else {
+      // Fallback: no offerings loaded (dev/sandbox) -- show confirmation
+      setPurchasing(true);
+      try {
+        await handlePurchaseSuccess();
+      } finally {
+        setPurchasing(false);
+      }
+    }
+  }, [packages, selectedPlan, handlePurchaseSuccess]);
+
+  const handleRestore = useCallback(async () => {
+    setRestoring(true);
+    try {
+      await restorePurchases();
+      const status = await checkSubscriptionStatus();
+      if (status.isPremium) {
+        if (user) {
+          setUser({ ...user, isPremium: true } as typeof user);
+        }
+        Alert.alert(
+          'Purchases Restored',
+          'Your premium access has been restored.',
+          [{ text: 'Great!', onPress: () => navigation.goBack() }],
+        );
+      } else {
+        Alert.alert('No Purchases Found', 'We could not find any previous purchases to restore.');
+      }
+    } catch {
+      Alert.alert('Restore Failed', 'Something went wrong while restoring purchases. Please try again.');
+    } finally {
+      setRestoring(false);
+    }
+  }, [user, setUser, navigation]);
 
   return (
     <View style={[styles.container, { backgroundColor: t.background }]}>
@@ -85,43 +200,63 @@ export const PaywallScreen: React.FC = () => {
         </View>
 
         {/* Pricing Cards */}
-        <View style={styles.plansRow}>
-          {PLANS.map((plan) => (
-            <TouchableOpacity
-              key={plan.key}
-              style={[
-                styles.planCard,
-                { backgroundColor: t.surface, borderColor: t.border },
-                selectedPlan === plan.key && { borderColor: colors.primary, backgroundColor: t.primary + '12' },
-              ]}
-              onPress={() => setSelectedPlan(plan.key)}
-            >
-              {plan.badge && (
-                <View style={[styles.planBadge, selectedPlan === plan.key && styles.planBadgeSelected]}>
-                  <Text style={[styles.planBadgeText, selectedPlan === plan.key && { color: colors.white }]}>
-                    {plan.badge}
-                  </Text>
-                </View>
-              )}
-              <Text style={[styles.planLabel, selectedPlan === plan.key && { color: colors.primary }]}>
-                {plan.label}
-              </Text>
-              <Text style={[styles.planPrice, selectedPlan === plan.key && { color: colors.primary }]}>
-                {plan.price}
-              </Text>
-              <Text style={[styles.planDetail, { color: t.lightText }]}>{plan.detail}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        {loadingOfferings ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color={colors.primary} />
+          </View>
+        ) : (
+          <View style={styles.plansRow}>
+            {PLANS.map((plan) => (
+              <TouchableOpacity
+                key={plan.key}
+                style={[
+                  styles.planCard,
+                  { backgroundColor: t.surface, borderColor: t.border },
+                  selectedPlan === plan.key && { borderColor: colors.primary, backgroundColor: t.primary + '12' },
+                ]}
+                onPress={() => setSelectedPlan(plan.key)}
+              >
+                {plan.badge && (
+                  <View style={[styles.planBadge, selectedPlan === plan.key && styles.planBadgeSelected]}>
+                    <Text style={[styles.planBadgeText, selectedPlan === plan.key && { color: colors.white }]}>
+                      {plan.badge}
+                    </Text>
+                  </View>
+                )}
+                <Text style={[styles.planLabel, selectedPlan === plan.key && { color: colors.primary }]}>
+                  {plan.label}
+                </Text>
+                <Text style={[styles.planPrice, selectedPlan === plan.key && { color: colors.primary }]}>
+                  {plan.price}
+                </Text>
+                <Text style={[styles.planDetail, { color: t.lightText }]}>{plan.detail}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
         {/* CTA */}
-        <Button title="Start Free 10-Day Trial" onPress={handleSubscribe} size="lg" />
+        <Button
+          title="Start Free 10-Day Trial"
+          onPress={handleSubscribe}
+          size="lg"
+          loading={purchasing}
+          disabled={purchasing || restoring}
+        />
         <Text style={styles.ctaSubtext}>
           Then {selectedPlan === 'monthly' ? '$4.99/month' : selectedPlan === 'yearly' ? '$29.99/year' : '$79.99 one-time'}. Cancel anytime.
         </Text>
 
-        <TouchableOpacity style={styles.restoreBtn}>
-          <Text style={styles.restoreText}>Restore Purchases</Text>
+        <TouchableOpacity
+          style={styles.restoreBtn}
+          onPress={handleRestore}
+          disabled={restoring || purchasing}
+        >
+          {restoring ? (
+            <ActivityIndicator size="small" color={colors.secondary} />
+          ) : (
+            <Text style={styles.restoreText}>Restore Purchases</Text>
+          )}
         </TouchableOpacity>
 
         {/* Trust badges */}
@@ -276,6 +411,12 @@ const styles = StyleSheet.create({
     color: colors.lightText,
     marginTop: 2,
   },
+  loadingContainer: {
+    height: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xl,
+  },
   ctaSubtext: {
     ...typography.caption1,
     color: colors.lightText,
@@ -285,6 +426,7 @@ const styles = StyleSheet.create({
   restoreBtn: {
     alignItems: 'center',
     marginTop: spacing.lg,
+    minHeight: 24,
   },
   restoreText: {
     ...typography.subhead,

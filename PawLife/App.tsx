@@ -6,11 +6,13 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { useAuthListener } from './src/hooks/useAuthListener';
 import { useFirestoreSync } from './src/hooks/useFirestoreSync';
+import { useNotifications } from './src/hooks/useNotifications';
 import { colors } from './src/theme';
 
 function AppContent() {
   const { loading } = useAuthListener();
   useFirestoreSync();
+  useNotifications();
 
   if (loading) {
     return (

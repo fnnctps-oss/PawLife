@@ -24,6 +24,11 @@ export default {
     trialTitle: 'Start Your Free\n10-Day Trial',
     startTrial: 'Start Free Trial',
     freePlan: 'Continue with Free Plan',
+    trialFeature1: 'Unlimited activity tracking',
+    trialFeature2: 'Smart reminders & notifications',
+    trialFeature3: 'Beautiful milestone cards',
+    trialFeature4: 'Weekly health reports',
+    trialFeature5: 'Multi-dog support',
   },
   auth: {
     signIn: 'Sign In',
@@ -39,6 +44,11 @@ export default {
     haveAccount: 'Already have an account?',
     resetLink: 'Send Reset Link',
     resetSuccess: 'Check your email for a reset link.',
+    tagline: "Your dog's best companion",
+    emailAddress: 'Email address',
+    joinSubtitle: 'Join PawLife and start tracking',
+    confirmPasswordPlaceholder: 'Confirm password',
+    fullNamePlaceholder: 'Full name',
   },
   home: {
     goodMorning: 'Good morning',
@@ -102,6 +112,9 @@ export default {
     helpFaq: 'Help & FAQ',
     contactUs: 'Contact Us',
     rateApp: 'Rate the App',
+    editProfile: 'Edit Profile',
+    breedBuddy: 'Breed Buddy',
+    weeklyReport: 'Weekly Report',
   },
   reminders: {
     title: 'Reminders',

@@ -24,6 +24,11 @@ export default {
     trialTitle: 'Comienza Tu Prueba\nGratuita de 10 D\u00edas',
     startTrial: 'Iniciar Prueba Gratuita',
     freePlan: 'Continuar con el Plan Gratuito',
+    trialFeature1: 'Seguimiento ilimitado de actividades',
+    trialFeature2: 'Recordatorios y notificaciones inteligentes',
+    trialFeature3: 'Hermosas tarjetas de logros',
+    trialFeature4: 'Informes semanales de salud',
+    trialFeature5: 'Soporte para múltiples perros',
   },
   auth: {
     signIn: 'Iniciar Sesi\u00f3n',
@@ -39,6 +44,11 @@ export default {
     haveAccount: '\u00bfYa tienes una cuenta?',
     resetLink: 'Enviar Enlace de Restablecimiento',
     resetSuccess: 'Revisa tu correo para el enlace de restablecimiento.',
+    tagline: 'El mejor compañero de tu perro',
+    emailAddress: 'Correo electrónico',
+    joinSubtitle: 'Únete a PawLife y comienza a registrar',
+    confirmPasswordPlaceholder: 'Confirmar contraseña',
+    fullNamePlaceholder: 'Nombre completo',
   },
   home: {
     goodMorning: 'Buenos d\u00edas',
@@ -102,6 +112,9 @@ export default {
     helpFaq: 'Ayuda y Preguntas Frecuentes',
     contactUs: 'Cont\u00e1ctanos',
     rateApp: 'Calificar la App',
+    editProfile: 'Editar Perfil',
+    breedBuddy: 'Compañero de Raza',
+    weeklyReport: 'Informe Semanal',
   },
   reminders: {
     title: 'Recordatorios',

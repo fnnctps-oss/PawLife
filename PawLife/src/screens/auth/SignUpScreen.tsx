@@ -9,12 +9,14 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { Button, Input, ScreenContainer } from '../../components';
 import { colors, spacing, typography, borderRadius, useTheme } from '../../theme';
 import { useStore } from '../../store/useStore';
 import { signUpWithEmail } from '../../services/auth';
 
 export const SignUpScreen: React.FC = () => {
+  const { t: tr } = useTranslation();
   const { colors: t } = useTheme();
   const navigation = useNavigation<any>();
   const { setAuthenticated, setUser } = useStore();
@@ -108,15 +110,15 @@ export const SignUpScreen: React.FC = () => {
           <View style={[styles.logoCircle, { backgroundColor: t.card }]}>
             <Ionicons name="paw" size={40} color={colors.primary} />
           </View>
-          <Text style={[styles.title, { color: t.darkText }]}>Create Account</Text>
-          <Text style={[styles.subtitle, { color: t.lightText }]}>Join PawLife and start tracking</Text>
+          <Text style={[styles.title, { color: t.darkText }]}>{tr('auth.createAccount')}</Text>
+          <Text style={[styles.subtitle, { color: t.lightText }]}>{tr('auth.joinSubtitle')}</Text>
         </View>
 
         {/* Form */}
         <View style={styles.form}>
           <Input
             icon="person-outline"
-            placeholder="Full name"
+            placeholder={tr('auth.fullNamePlaceholder')}
             value={name}
             onChangeText={(text) => {
               setName(text);
@@ -129,7 +131,7 @@ export const SignUpScreen: React.FC = () => {
 
           <Input
             icon="mail-outline"
-            placeholder="Email address"
+            placeholder={tr('auth.emailAddress')}
             value={email}
             onChangeText={(text) => {
               setEmail(text);
@@ -143,7 +145,7 @@ export const SignUpScreen: React.FC = () => {
 
           <Input
             icon="lock-closed-outline"
-            placeholder="Password"
+            placeholder={tr('auth.password')}
             value={password}
             onChangeText={(text) => {
               setPassword(text);
@@ -158,7 +160,7 @@ export const SignUpScreen: React.FC = () => {
 
           <Input
             icon="lock-closed-outline"
-            placeholder="Confirm password"
+            placeholder={tr('auth.confirmPasswordPlaceholder')}
             value={confirmPassword}
             onChangeText={(text) => {
               setConfirmPassword(text);
@@ -173,7 +175,7 @@ export const SignUpScreen: React.FC = () => {
 
           <View style={styles.buttonSpacing}>
             <Button
-              title="Create Account"
+              title={tr('auth.createAccount')}
               onPress={handleSignUp}
               loading={loading}
               size="lg"
@@ -184,7 +186,7 @@ export const SignUpScreen: React.FC = () => {
         {/* Divider */}
         <View style={styles.dividerContainer}>
           <View style={[styles.dividerLine, { backgroundColor: t.border }]} />
-          <Text style={[styles.dividerText, { color: t.lightText }]}>or continue with</Text>
+          <Text style={[styles.dividerText, { color: t.lightText }]}>{tr('auth.orContinueWith')}</Text>
           <View style={[styles.dividerLine, { backgroundColor: t.border }]} />
         </View>
 
@@ -211,9 +213,9 @@ export const SignUpScreen: React.FC = () => {
 
         {/* Sign In Link */}
         <View style={styles.bottomLink}>
-          <Text style={[styles.bottomLinkText, { color: t.lightText }]}>Already have an account? </Text>
+          <Text style={[styles.bottomLinkText, { color: t.lightText }]}>{tr('auth.haveAccount')} </Text>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.bottomLinkAction}>Sign In</Text>
+            <Text style={styles.bottomLinkAction}>{tr('auth.signIn')}</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
