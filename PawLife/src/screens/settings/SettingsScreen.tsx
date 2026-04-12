@@ -13,6 +13,7 @@ import { colors, spacing, typography, borderRadius, shadows, useTheme } from '..
 import type { ThemeMode } from '../../theme';
 import { ScreenContainer, Avatar, Card } from '../../components';
 import { useStore } from '../../store/useStore';
+import { signOut } from '../../services/auth';
 
 interface SettingsRowProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -68,7 +69,10 @@ export const SettingsScreen: React.FC = () => {
       {
         text: 'Sign Out',
         style: 'destructive',
-        onPress: () => {
+        onPress: async () => {
+          try {
+            await signOut();
+          } catch {}
           setAuthenticated(false);
           setUser(null);
         },

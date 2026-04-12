@@ -12,6 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Button, Input, ScreenContainer } from '../../components';
 import { colors, spacing, typography, borderRadius, useTheme } from '../../theme';
 import { useStore } from '../../store/useStore';
+import { signInWithEmail } from '../../services/auth';
 
 export const SignInScreen: React.FC = () => {
   const { colors: t } = useTheme();
@@ -44,31 +45,27 @@ export const SignInScreen: React.FC = () => {
     if (!validate()) return;
 
     setLoading(true);
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    setUser({
-      id: '1',
-      email: email.trim(),
-      displayName: email.split('@')[0],
-      photoURL: '',
-      subscription: { plan: 'free' },
-      createdAt: new Date().toISOString(),
-    });
-    setAuthenticated(true);
-    setLoading(false);
+    try {
+      const user = await signInWithEmail(email.trim(), password);
+      setUser(user);
+      setAuthenticated(true);
+    } catch (err: any) {
+      const code = err?.code ?? '';
+      if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+        setErrors({ password: 'Invalid email or password' });
+      } else if (code === 'auth/too-many-requests') {
+        setErrors({ password: 'Too many attempts. Please try again later.' });
+      } else {
+        setErrors({ password: err?.message ?? 'Sign in failed' });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSocialSignIn = (provider: string) => {
-    setUser({
-      id: '1',
-      email: `user@${provider}.com`,
-      displayName: `${provider} User`,
-      photoURL: '',
-      subscription: { plan: 'free' },
-      createdAt: new Date().toISOString(),
-    });
-    setAuthenticated(true);
+    // Google/Apple sign-in requires native modules — placeholder for now
+    alert(`${provider} sign-in requires native configuration. Use email/password for now.`);
   };
 
   return (

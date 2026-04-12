@@ -12,6 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Button, Input, ScreenContainer } from '../../components';
 import { colors, spacing, typography, borderRadius, useTheme } from '../../theme';
 import { useStore } from '../../store/useStore';
+import { signUpWithEmail } from '../../services/auth';
 
 export const SignUpScreen: React.FC = () => {
   const { colors: t } = useTheme();
@@ -66,19 +67,22 @@ export const SignUpScreen: React.FC = () => {
     if (!validate()) return;
 
     setLoading(true);
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    setUser({
-      id: '1',
-      email: email.trim(),
-      displayName: name.trim(),
-      photoURL: '',
-      subscription: { plan: 'free' },
-      createdAt: new Date().toISOString(),
-    });
-    setAuthenticated(true);
-    setLoading(false);
+    try {
+      const user = await signUpWithEmail(email.trim(), password, name.trim());
+      setUser(user);
+      setAuthenticated(true);
+    } catch (err: any) {
+      const code = err?.code ?? '';
+      if (code === 'auth/email-already-in-use') {
+        setErrors({ email: 'This email is already registered' });
+      } else if (code === 'auth/weak-password') {
+        setErrors({ password: 'Password is too weak' });
+      } else {
+        setErrors({ email: err?.message ?? 'Sign up failed' });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSocialSignUp = (provider: string) => {

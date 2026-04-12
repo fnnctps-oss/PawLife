@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { Button, Input, ScreenContainer } from '../../components';
 import { colors, spacing, typography, borderRadius, useTheme } from '../../theme';
+import { resetPassword } from '../../services/auth';
 
 export const ForgotPasswordScreen: React.FC = () => {
   const { colors: t } = useTheme();
@@ -59,10 +60,19 @@ export const ForgotPasswordScreen: React.FC = () => {
     if (!validate()) return;
 
     setLoading(true);
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setLoading(false);
-    setSent(true);
+    try {
+      await resetPassword(email.trim());
+      setSent(true);
+    } catch (err: any) {
+      const code = err?.code ?? '';
+      if (code === 'auth/user-not-found') {
+        setError('No account found with this email');
+      } else {
+        setError(err?.message ?? 'Failed to send reset email');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (sent) {
